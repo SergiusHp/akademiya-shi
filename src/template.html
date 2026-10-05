@@ -1,110 +1,191 @@
 <div class="root {{ themeCls }}">
+<a class="skip" href="#main">Перейти до змісту</a>
+<div class="sr-only" role="status" aria-live="polite">{{ live }}</div>
 
 <header class="top">
   <div class="wrap topin">
-    <button class="brand" onClick="{{ goHome }}"><span class="logo"></span><span>Академія ШІ</span></button>
-    <nav class="nav" aria-label="Розділи">
-      <sc-for list="{{ nav }}" as="n"><button class="{{ n.cls }}" onClick="{{ n.go }}">{{ n.label }}</button></sc-for>
+    <button class="brand" onClick="{{ goHome }}" aria-label="Академія ШІ — на головну"><span class="logo" aria-hidden="true"></span><span>Академія ШІ</span></button>
+    <nav class="nav" aria-label="Основна навігація">
+      <sc-for list="{{ nav }}" as="n"><button class="navb" aria-current="{{ n.current }}" onClick="{{ n.go }}"><span class="{{ n.icon }}" aria-hidden="true"></span>{{ n.label }}</button></sc-for>
     </nav>
     <div class="tools">
-      <span class="meter" title="Пройдено курсу"><progress value="{{ overall }}" max="100"></progress>{{ overall }}%</span>
-      <button class="btn sm" onClick="{{ toggleDark }}">{{ themeLabel }}</button>
+      <span class="pill" title="Пройдено курсу"><progress value="{{ overall }}" max="100" aria-hidden="true"></progress><span><span class="sr-only">Пройдено курсу: </span>{{ overall }}%</span></span>
+      <button class="btn icon ghost" onClick="{{ toggleDark }}" aria-label="{{ themeLabel }}" title="{{ themeLabel }}"><span class="{{ themeIcon }}" aria-hidden="true"></span></button>
+      <button class="btn icon ghost menu-btn" onClick="{{ toggleMenu }}" aria-label="Відкрити меню" aria-expanded="{{ menuExpanded }}"><span class="ico i-menu" aria-hidden="true"></span></button>
     </div>
   </div>
 </header>
 
-<main class="wrap">
+<sc-if value="{{ menuOpen }}">
+  <div class="sheet-backdrop" onClick="{{ closeMenu }}"></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Меню">
+    <div class="sheet-head"><span class="brand" style="cursor:default"><span class="logo" aria-hidden="true"></span>Академія ШІ</span><button class="btn icon ghost" onClick="{{ closeMenu }}" aria-label="Закрити меню"><span class="ico i-close" aria-hidden="true"></span></button></div>
+    <sc-for list="{{ nav }}" as="n"><button class="navb" aria-current="{{ n.current }}" onClick="{{ n.go }}"><span class="{{ n.icon }}" aria-hidden="true"></span>{{ n.label }}</button></sc-for>
+    <div class="sheet-foot">
+      <div class="mprog"><progress value="{{ overall }}" max="100" aria-hidden="true"></progress><span>Пройдено {{ overall }}%</span></div>
+      <button class="btn" onClick="{{ toggleDark }}"><span class="{{ themeIcon }}" aria-hidden="true"></span>{{ themeLabel }}</button>
+    </div>
+  </div>
+</sc-if>
+
+<main class="wrap" id="main" tabindex="-1">
 
 <!-- ================= ГОЛОВНА ================= -->
 <sc-if value="{{ isHome }}">
-<div class="load">
-  <section class="hero">
-    <div class="heroL">
-      <h1>Навчіться працювати зі штучним інтелектом впевнено й професійно</h1>
-      <p class="lead">Від першого запиту до власних агентів і Telegram-ботів. Короткі уроки, практика з чеклістом і тест після кожного модуля.</p>
-      <div class="cta-row">
-        <button class="btn pri" onClick="{{ resume.go }}">{{ resume.label }}</button>
-        <button class="btn" onClick="{{ openWork }}">Відкрити майстерню</button>
+<div>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-l">
+      <h1 id="hero-title">Навчіться впевнено працювати зі штучним інтелектом</h1>
+      <p class="lead">Безкоштовний курс українською для початківців і практиків. Ви навчитеся ставити ШІ точні завдання, перевіряти відповіді, досліджувати, створювати сайти, налаштовувати агентів і Telegram-ботів.</p>
+      <div class="btn-row hero-cta">
+        <button class="btn primary lg" onClick="{{ resume.go }}">{{ resume.label }}<span class="ico i-arrowRight" aria-hidden="true"></span></button>
+        <button class="btn lg" onClick="{{ toRoute }}">Переглянути програму</button>
       </div>
-      <p class="cta-note">{{ resume.note }}</p>
+      <div class="facts">
+        <span><span class="ico i-book" aria-hidden="true"></span>{{ totals.mods }} модулів · {{ totals.lessons }} уроків</span>
+        <span><span class="ico i-clock" aria-hidden="true"></span>≈ {{ totals.hours }} годин у власному темпі</span>
+        <span><span class="ico i-user" aria-hidden="true"></span>Без реєстрації й оплати</span>
+      </div>
     </div>
-    <div class="demo" aria-label="Приклад різниці між запитами">
-      <div class="demo-row">
-        <span class="demo-lbl x">✕ Розмитий запит</span>
-        <div class="demo-txt">Напиши про каву</div>
-        <p class="demo-out muted">Отримаєте загальний текст, який доведеться переписувати.</p>
+
+    <sc-if value="{{ resume.hasProgress }}">
+      <div class="panel cont" aria-label="Продовжити навчання">
+        <span class="panel-cap"><span class="ico i-play" aria-hidden="true"></span>Ви зупинилися тут</span>
+        <div>
+          <span class="muted small">Модуль {{ resume.num }} з {{ totals.mods }}</span>
+          <h3>{{ resume.title }}</h3>
+        </div>
+        <div class="row-meta"><span>Пройдено модуля</span><span>{{ resume.pct }}%</span></div>
+        <progress value="{{ resume.pct }}" max="100" aria-label="Прогрес модуля"></progress>
+        <div class="next"><span class="{{ resume.stepIcon }}" aria-hidden="true"></span><div><b>{{ resume.stepLabel }}</b><span class="muted small">{{ resume.stepTitle }}</span></div></div>
+        <button class="btn primary" onClick="{{ resume.go }}">Продовжити навчання<span class="ico i-arrowRight" aria-hidden="true"></span></button>
+        <span class="muted small">Завершено модулів: {{ resume.doneMods }} з {{ totals.mods }}. Прогрес зберігається в цьому браузері.</span>
       </div>
-      <hr>
-      <div class="demo-row draw">
-        <span class="demo-lbl v">✓ Точний запит</span>
-        <div class="demo-txt">Ти — копірайтер. Напиши 3 заголовки до 60 символів для кав’ярні. Аудиторія: студенти. Тон: дружній.</div>
-        <p class="demo-out"><span class="hl">Роль, аудиторія, кількість і тон</span> — модель не вгадує, а виконує.</p>
+    </sc-if>
+    <sc-if value="{{ resume.noProgress }}">
+      <div class="panel demo" aria-label="Приклад з першого модуля">
+        <span class="panel-cap"><span class="ico i-bulb" aria-hidden="true"></span>Приклад з модуля «Промпт»</span>
+        <div class="demo-row">
+          <span class="demo-lbl x"><span class="ico i-x" aria-hidden="true"></span>Розмитий запит</span>
+          <div class="demo-txt">Напиши про каву</div>
+          <p class="demo-out">Отримаєте загальний текст, який доведеться переписувати.</p>
+        </div>
+        <hr>
+        <div class="demo-row draw">
+          <span class="demo-lbl v"><span class="ico i-check" aria-hidden="true"></span>Точний запит</span>
+          <div class="demo-txt">Ти — копірайтер. Напиши 3 заголовки до 60 символів для кав’ярні. Аудиторія: студенти. Тон: дружній.</div>
+          <p class="demo-out"><span class="hl">Роль, аудиторія, кількість і тон</span> — модель не вгадує, а виконує.</p>
+        </div>
       </div>
+    </sc-if>
+  </section>
+
+  <section class="sec" aria-labelledby="out-title">
+    <div class="sec-h">
+      <h2 id="out-title">Що ви навчитеся робити</h2>
+      <p>Кожна навичка — це окремі модулі з уроками, вправою й тестом. Можна йти по черзі або одразу відкрити потрібну тему.</p>
+    </div>
+    <div class="outcomes">
+      <sc-for list="{{ outcomes }}" as="o">
+        <div class="outcome">
+          <span class="ico-tile"><span class="{{ o.icon }}" aria-hidden="true"></span></span>
+          <div>
+            <h3>{{ o.title }}</h3>
+            <p>{{ o.text }}</p>
+            <button class="btn link" onClick="{{ o.open }}">{{ o.link }}<span class="ico i-arrowRight" aria-hidden="true"></span></button>
+          </div>
+        </div>
+      </sc-for>
     </div>
   </section>
 
-  <section class="how" aria-label="Як влаштоване навчання">
-    <div><b>1</b><h3>Читайте урок</h3><p>Одна ідея за раз, з прикладами «слабко / сильно» і шаблонами.</p></div>
-    <div><b>2</b><h3>Робіть вправу</h3><p>Завдання на власному матеріалі й чекліст самоперевірки.</p></div>
-    <div><b>3</b><h3>Перевірте себе</h3><p>Тест з поясненнями. Поріг — 75%, помилки збираються для повторення.</p></div>
-    <div><b>4</b><h3>Створіть проєкт</h3><p>Три роботи для портфоліо й фінальний іспит.</p></div>
+  <section class="sec" aria-labelledby="aud-title">
+    <div class="sec-h"><h2 id="aud-title">Для кого цей курс</h2></div>
+    <div class="audience">
+      <div><span class="ico i-sprout" aria-hidden="true"></span><h3>Для початківців</h3><p>Ніколи серйозно не працювали з ШІ? Перші модулі пояснюють, як влаштовані моделі, що таке промпт і чому відповіді треба перевіряти. Технічних знань не потрібно.</p></div>
+      <div><span class="ico i-search" aria-hidden="true"></span><h3>Для дослідників і авторів</h3><p>Для тих, хто працює з текстами, джерелами й даними: як шукати, перевіряти факти, порівнювати позиції й не потрапити на вигадані цитати.</p></div>
+      <div><span class="ico i-hammer" aria-hidden="true"></span><h3>Для тих, хто створює</h3><p>Сайти, агенти, автоматизація, Telegram-боти й канали: як ставити технічне завдання, контролювати якість, витрати й безпеку.</p></div>
+    </div>
   </section>
 
-  <div class="route">
-    <sc-for list="{{ stages }}" as="st">
-      <section class="stage">
-        <div class="stage-h">
-          <span class="num">Етап {{ st.num }} з 3</span>
-          <h2>{{ st.title }}</h2>
-          <p>{{ st.desc }}</p>
-          <span class="pc">Завершено {{ st.done }} з {{ st.total }}</span>
-        </div>
-        <div class="rows">
-          <sc-for list="{{ st.mods }}" as="m">
-            <button class="{{ m.rowCls }}" onClick="{{ m.open }}">
-              <span class="n">{{ m.num }}</span>
-              <span class="t"><b>{{ m.title }}</b><span>{{ m.desc }}</span></span>
-              <span class="s"><span class="{{ m.stCls }}">{{ m.stLabel }}</span><span>≈ {{ m.mins }} хв</span></span>
-            </button>
-          </sc-for>
-        </div>
-      </section>
-    </sc-for>
-  </div>
+  <section class="sec" aria-labelledby="how-title">
+    <div class="sec-h"><h2 id="how-title">Як проходить навчання</h2><p>Кожен модуль складається з чотирьох кроків. Модуль вважається завершеним, коли пройдено всі уроки, практику й тест від 75%.</p></div>
+    <ol class="process">
+      <li><h3>Читайте уроки</h3><p>Один урок на екрані: коротке пояснення, приклади «слабко / сильно», шаблони промптів.</p></li>
+      <li><h3>Виконайте практику</h3><p>Завдання на власному матеріалі й чекліст самоперевірки.</p></li>
+      <li><h3>Пройдіть тест</h3><p>Пояснення до кожної відповіді, помилки збираються для повторення.</p></li>
+      <li><h3>Підсумуйте</h3><p>Запишіть, що застосуєте. Після курсу — три проєкти й фінальний іспит.</p></li>
+    </ol>
+  </section>
 
-  <footer class="foot">
-    <h3>Про курс</h3>
-    <p>Курс поєднує «Академію ШІ» та програму «ШІ-Майстер». Офіційні джерела наведено в підсумку кожного модуля. Тарифи й інтерфейси сервісів змінюються — перевіряйте їх перед оплатою чи підключенням.</p>
-    <p>Прогрес зберігається лише в цьому браузері. Не записуйте сюди паролі, ключі API й токени ботів.</p>
-  </footer>
+  <section class="sec" id="route" aria-labelledby="route-title">
+    <div class="sec-h"><h2 id="route-title">Програма курсу</h2><p>Три етапи — від основ до агентів і автоматизації. Відкрийте етап, щоб побачити модулі.</p></div>
+    <div class="route">
+      <sc-for list="{{ stages }}" as="st">
+        <section class="stage">
+          <button class="stage-h" aria-expanded="{{ st.expanded }}" onClick="{{ st.toggle }}">
+            <span class="num" aria-hidden="true">{{ st.num }}</span>
+            <span class="tt"><b>Етап {{ st.num }}. {{ st.title }}</b><span>{{ st.desc }}</span></span>
+            <span class="side"><span class="cnt">{{ st.done }} з {{ st.total }}</span><progress class="{{ st.barCls }}" value="{{ st.pct }}" max="100" aria-hidden="true"></progress><span class="ico i-chevronDown chev" aria-hidden="true"></span></span>
+          </button>
+          <sc-if value="{{ st.open }}">
+            <ul class="mods">
+              <sc-for list="{{ st.mods }}" as="m">
+                <li><button class="{{ m.cls }}" onClick="{{ m.open }}">
+                  <span class="{{ m.stIcon }}" aria-hidden="true"></span>
+                  <span class="n" aria-hidden="true">{{ m.num }}</span>
+                  <span class="t"><b><span class="sr-only">Модуль {{ m.num }}: </span>{{ m.title }}</b><span>{{ m.desc }}</span><small><span class="ico i-clock" aria-hidden="true"></span>≈ {{ m.mins }} хв · {{ m.lessons }} уроків<span class="sr-only">. {{ m.stLabel }}</span></small></span>
+                  <span class="{{ m.actCls }}">{{ m.act }}<span class="ico i-arrowRight" aria-hidden="true"></span></span>
+                </button></li>
+              </sc-for>
+            </ul>
+          </sc-if>
+        </section>
+      </sc-for>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="tools-title">
+    <div class="sec-h"><h2 id="tools-title">Тренажери для практики</h2><p>Інструменти, які закріплюють навички з уроків. Вони працюють за заданими правилами й не звертаються до моделі.</p></div>
+    <div class="toolsgrid">
+      <sc-for list="{{ toolsList }}" as="t"><button class="toolbtn" onClick="{{ t.go }}"><span class="ico-tile"><span class="{{ t.icon }}" aria-hidden="true"></span></span><div><b>{{ t.label }}</b><span>{{ t.desc }}</span></div></button></sc-for>
+    </div>
+  </section>
 </div>
 </sc-if>
 
 <!-- ================= МОДУЛЬ ================= -->
 <sc-if value="{{ isModule }}">
 <div class="page">
-  <div class="mhead">
-    <div class="crumb"><button onClick="{{ goHome }}">Курс</button><span>/</span><span>Модуль {{ cur.num }} з {{ cur.count }} · {{ cur.stageTitle }}</span></div>
+  <div class="phead">
+    <nav class="crumb" aria-label="Навігаційний ланцюжок"><button onClick="{{ goRoute }}"><span class="ico i-arrowLeft" aria-hidden="true"></span>Програма курсу</button><span aria-hidden="true">/</span><span>Етап {{ cur.stageNum }}. {{ cur.stageTitle }}</span></nav>
+    <span class="badge accent" style="align-self:flex-start">Модуль {{ cur.num }} з {{ cur.count }}</span>
     <h1>{{ cur.title }}</h1>
     <p class="lead">{{ cur.intro }}</p>
-    <span class="pc">{{ cur.metaLine }}</span>
+    <div class="meta">
+      <span><span class="ico i-book" aria-hidden="true"></span>{{ cur.L }} уроків</span>
+      <span><span class="ico i-clipboard" aria-hidden="true"></span>{{ cur.total }} питань</span>
+      <span><span class="ico i-clock" aria-hidden="true"></span>≈ {{ cur.mins }} хв</span>
+      <sc-if value="{{ cur.complete }}"><span class="badge ok"><span class="ico i-check" aria-hidden="true"></span>Модуль завершено</span></sc-if>
+    </div>
+    <div class="mprog"><progress class="{{ cur.barCls }}" value="{{ cur.pct }}" max="100" aria-label="Прогрес модуля"></progress><span>{{ cur.pct }}%</span></div>
   </div>
 
-  <nav class="stepper" aria-label="Етапи модуля">
-    <sc-for list="{{ cur.steps }}" as="t"><button class="{{ t.cls }}" onClick="{{ t.go }}"><i>{{ t.mark }}</i>{{ t.label }}</button></sc-for>
+  <nav class="stepper" aria-label="Кроки модуля">
+    <sc-for list="{{ cur.steps }}" as="t"><button class="{{ t.cls }}" aria-current="{{ t.current }}" onClick="{{ t.go }}"><span class="ico-tile"><span class="{{ t.icon }}" aria-hidden="true"></span></span><span class="t"><b>{{ t.label }}</b><small>{{ t.sub }}</small></span></button></sc-for>
   </nav>
 
-  <!-- Уроки: один урок за раз -->
+  <!-- Уроки -->
   <sc-if value="{{ cur.isLessons }}">
   <div class="study">
-    <aside class="toc" aria-label="Уроки модуля">
-      <span class="lbl">Уроки</span>
-      <sc-for list="{{ cur.toc }}" as="c"><button class="{{ c.cls }}" onClick="{{ c.go }}"><i>{{ c.mark }}</i><span>{{ c.t }}</span></button></sc-for>
-    </aside>
-    <sc-if value="{{ cur.even }}"><div class="reader draw"><sc-for list="{{ cur.one }}" as="l">
-      <div class="meta"><span>Урок {{ l.num }} з {{ l.total }}</span><span>≈ {{ l.mins }} хв читання</span><sc-if value="{{ l.deep }}"><span class="badge">Поглиблення</span></sc-if></div>
-      <div class="dots qdots"><sc-for list="{{ cur.toc }}" as="c"><button class="{{ c.dotCls }}" onClick="{{ c.go }}" aria-label="{{ c.t }}">{{ c.n }}</button></sc-for></div>
-      <h2>{{ l.t }}</h2>
+    <nav class="toc" aria-label="Уроки модуля">
+      <span class="lbl">Уроки модуля</span>
+      <sc-for list="{{ cur.toc }}" as="c"><button class="{{ c.cls }}" aria-current="{{ c.current }}" onClick="{{ c.go }}"><span class="{{ c.icon }}" aria-hidden="true"></span><span>{{ c.t }}</span></button></sc-for>
+    </nav>
+    <sc-if value="{{ cur.even }}"><article class="reader draw" aria-labelledby="lesson-title"><sc-for list="{{ cur.one }}" as="l">
+      <div class="meta"><span>Урок {{ l.num }} з {{ l.total }}</span><span><span class="ico i-clock" aria-hidden="true"></span>≈ {{ l.mins }} хв читання</span><sc-if value="{{ l.deep }}"><span class="badge accent">Поглиблення</span></sc-if><sc-if value="{{ l.done }}"><span class="badge ok"><span class="ico i-check" aria-hidden="true"></span>Засвоєно</span></sc-if></div>
+      <div class="dots" role="group" aria-label="Перейти до уроку"><sc-for list="{{ cur.toc }}" as="c"><button class="{{ c.dotCls }}" aria-current="{{ c.current }}" onClick="{{ c.go }}" aria-label="{{ c.aria }}">{{ c.n }}</button></sc-for></div>
+      <h2 id="lesson-title">{{ l.t }}</h2>
       <div class="prose">
         <sc-for list="{{ l.blocks }}" as="b">
           <sc-if value="{{ b.isP }}"><p><sc-for list="{{ b.segs }}" as="s"><span class="{{ s.cls }}">{{ s.t }}</span></sc-for></p></sc-if>
@@ -112,35 +193,34 @@
           <sc-if value="{{ b.isUl }}"><ul><sc-for list="{{ b.items }}" as="it"><li><sc-for list="{{ it.segs }}" as="s"><span class="{{ s.cls }}">{{ s.t }}</span></sc-for></li></sc-for></ul></sc-if>
           <sc-if value="{{ b.isOl }}"><ol><sc-for list="{{ b.items }}" as="it"><li><sc-for list="{{ it.segs }}" as="s"><span class="{{ s.cls }}">{{ s.t }}</span></sc-for></li></sc-for></ol></sc-if>
           <sc-if value="{{ b.isPre }}"><pre class="blk">{{ b.text }}</pre></sc-if>
-          <sc-if value="{{ b.isSteps }}"><div class="flow"><sc-for list="{{ b.items }}" as="it"><span class="st">{{ it.t }}</span><span class="ar">→</span></sc-for></div></sc-if>
+          <sc-if value="{{ b.isSteps }}"><div class="flow"><sc-for list="{{ b.items }}" as="it"><span class="st">{{ it.t }}</span><span class="ar" aria-hidden="true">→</span></sc-for></div></sc-if>
           <sc-if value="{{ b.isCall }}"><div class="{{ b.cls }}"><b>{{ b.title }}</b><span><sc-for list="{{ b.segs }}" as="s"><span class="{{ s.cls }}">{{ s.t }}</span></sc-for></span></div></sc-if>
         </sc-for>
       </div>
       <sc-if value="{{ l.hasEx }}">
         <div class="ex">
-          <div class="exb b"><span class="k">✕ Слабко</span><span class="m">{{ l.bad }}</span></div>
-          <div class="exb g"><span class="k">✓ Сильно</span><span class="m">{{ l.good }}</span></div>
+          <div class="exb b"><span class="k"><span class="ico i-x" aria-hidden="true"></span>Слабко</span><span class="m">{{ l.bad }}</span></div>
+          <div class="exb g"><span class="k"><span class="ico i-check" aria-hidden="true"></span>Сильно</span><span class="m">{{ l.good }}</span></div>
         </div>
       </sc-if>
       <sc-if value="{{ l.hasTpl }}">
         <details class="tpl">
-          <summary>Шаблон промпту <span>{{ l.tplTitle }}</span></summary>
-          <div class="tpl-body"><pre>{{ l.tpl }}</pre><div><button class="btn sm" onClick="{{ l.copy }}">{{ l.copyLabel }}</button></div></div>
+          <summary><span class="ico i-message" aria-hidden="true"></span>Шаблон промпту <span class="muted">{{ l.tplTitle }}</span><span class="ico i-chevronDown chev" aria-hidden="true"></span></summary>
+          <div class="tpl-body"><pre>{{ l.tpl }}</pre><div><button class="btn sm" onClick="{{ l.copy }}"><span class="{{ l.copyIcon }}" aria-hidden="true"></span>{{ l.copyLabel }}</button></div></div>
         </details>
       </sc-if>
       <sc-if value="{{ l.hasTip }}">
-        <div class="keyidea"><span class="lbl">Запам’ятайте</span><span class="hl">{{ l.tip }}</span></div>
+        <div class="keyidea"><span class="ico-tile"><span class="ico i-bulb" aria-hidden="true"></span></span><div><span class="lbl">Запам’ятайте</span><p><span class="hl">{{ l.tip }}</span></p></div></div>
       </sc-if>
       <div class="lnav">
-        <sc-if value="{{ l.hasPrev }}"><button class="btn" onClick="{{ l.prev }}">← Попередній</button></sc-if>
-        <sc-if value="{{ l.noPrev }}"><span></span></sc-if>
-        <button class="btn pri" onClick="{{ l.next }}">{{ l.nextLabel }}</button>
+        <sc-if value="{{ l.hasPrev }}"><button class="btn" onClick="{{ l.prev }}"><span class="ico i-arrowLeft" aria-hidden="true"></span>Попередній</button></sc-if>
+        <button class="btn primary" onClick="{{ l.next }}">{{ l.nextLabel }}<span class="ico i-arrowRight" aria-hidden="true"></span></button>
       </div>
-    </sc-for></div></sc-if>
-    <sc-if value="{{ cur.odd }}"><section class="reader draw"><sc-for list="{{ cur.one }}" as="l">
-      <div class="meta"><span>Урок {{ l.num }} з {{ l.total }}</span><span>≈ {{ l.mins }} хв читання</span><sc-if value="{{ l.deep }}"><span class="badge">Поглиблення</span></sc-if></div>
-      <div class="dots qdots"><sc-for list="{{ cur.toc }}" as="c"><button class="{{ c.dotCls }}" onClick="{{ c.go }}" aria-label="{{ c.t }}">{{ c.n }}</button></sc-for></div>
-      <h2>{{ l.t }}</h2>
+    </sc-for></article></sc-if>
+    <sc-if value="{{ cur.odd }}"><section class="reader draw" aria-labelledby="lesson-title"><sc-for list="{{ cur.one }}" as="l">
+      <div class="meta"><span>Урок {{ l.num }} з {{ l.total }}</span><span><span class="ico i-clock" aria-hidden="true"></span>≈ {{ l.mins }} хв читання</span><sc-if value="{{ l.deep }}"><span class="badge accent">Поглиблення</span></sc-if><sc-if value="{{ l.done }}"><span class="badge ok"><span class="ico i-check" aria-hidden="true"></span>Засвоєно</span></sc-if></div>
+      <div class="dots" role="group" aria-label="Перейти до уроку"><sc-for list="{{ cur.toc }}" as="c"><button class="{{ c.dotCls }}" aria-current="{{ c.current }}" onClick="{{ c.go }}" aria-label="{{ c.aria }}">{{ c.n }}</button></sc-for></div>
+      <h2 id="lesson-title">{{ l.t }}</h2>
       <div class="prose">
         <sc-for list="{{ l.blocks }}" as="b">
           <sc-if value="{{ b.isP }}"><p><sc-for list="{{ b.segs }}" as="s"><span class="{{ s.cls }}">{{ s.t }}</span></sc-for></p></sc-if>
@@ -148,29 +228,28 @@
           <sc-if value="{{ b.isUl }}"><ul><sc-for list="{{ b.items }}" as="it"><li><sc-for list="{{ it.segs }}" as="s"><span class="{{ s.cls }}">{{ s.t }}</span></sc-for></li></sc-for></ul></sc-if>
           <sc-if value="{{ b.isOl }}"><ol><sc-for list="{{ b.items }}" as="it"><li><sc-for list="{{ it.segs }}" as="s"><span class="{{ s.cls }}">{{ s.t }}</span></sc-for></li></sc-for></ol></sc-if>
           <sc-if value="{{ b.isPre }}"><pre class="blk">{{ b.text }}</pre></sc-if>
-          <sc-if value="{{ b.isSteps }}"><div class="flow"><sc-for list="{{ b.items }}" as="it"><span class="st">{{ it.t }}</span><span class="ar">→</span></sc-for></div></sc-if>
+          <sc-if value="{{ b.isSteps }}"><div class="flow"><sc-for list="{{ b.items }}" as="it"><span class="st">{{ it.t }}</span><span class="ar" aria-hidden="true">→</span></sc-for></div></sc-if>
           <sc-if value="{{ b.isCall }}"><div class="{{ b.cls }}"><b>{{ b.title }}</b><span><sc-for list="{{ b.segs }}" as="s"><span class="{{ s.cls }}">{{ s.t }}</span></sc-for></span></div></sc-if>
         </sc-for>
       </div>
       <sc-if value="{{ l.hasEx }}">
         <div class="ex">
-          <div class="exb b"><span class="k">✕ Слабко</span><span class="m">{{ l.bad }}</span></div>
-          <div class="exb g"><span class="k">✓ Сильно</span><span class="m">{{ l.good }}</span></div>
+          <div class="exb b"><span class="k"><span class="ico i-x" aria-hidden="true"></span>Слабко</span><span class="m">{{ l.bad }}</span></div>
+          <div class="exb g"><span class="k"><span class="ico i-check" aria-hidden="true"></span>Сильно</span><span class="m">{{ l.good }}</span></div>
         </div>
       </sc-if>
       <sc-if value="{{ l.hasTpl }}">
         <details class="tpl">
-          <summary>Шаблон промпту <span>{{ l.tplTitle }}</span></summary>
-          <div class="tpl-body"><pre>{{ l.tpl }}</pre><div><button class="btn sm" onClick="{{ l.copy }}">{{ l.copyLabel }}</button></div></div>
+          <summary><span class="ico i-message" aria-hidden="true"></span>Шаблон промпту <span class="muted">{{ l.tplTitle }}</span><span class="ico i-chevronDown chev" aria-hidden="true"></span></summary>
+          <div class="tpl-body"><pre>{{ l.tpl }}</pre><div><button class="btn sm" onClick="{{ l.copy }}"><span class="{{ l.copyIcon }}" aria-hidden="true"></span>{{ l.copyLabel }}</button></div></div>
         </details>
       </sc-if>
       <sc-if value="{{ l.hasTip }}">
-        <div class="keyidea"><span class="lbl">Запам’ятайте</span><span class="hl">{{ l.tip }}</span></div>
+        <div class="keyidea"><span class="ico-tile"><span class="ico i-bulb" aria-hidden="true"></span></span><div><span class="lbl">Запам’ятайте</span><p><span class="hl">{{ l.tip }}</span></p></div></div>
       </sc-if>
       <div class="lnav">
-        <sc-if value="{{ l.hasPrev }}"><button class="btn" onClick="{{ l.prev }}">← Попередній</button></sc-if>
-        <sc-if value="{{ l.noPrev }}"><span></span></sc-if>
-        <button class="btn pri" onClick="{{ l.next }}">{{ l.nextLabel }}</button>
+        <sc-if value="{{ l.hasPrev }}"><button class="btn" onClick="{{ l.prev }}"><span class="ico i-arrowLeft" aria-hidden="true"></span>Попередній</button></sc-if>
+        <button class="btn primary" onClick="{{ l.next }}">{{ l.nextLabel }}<span class="ico i-arrowRight" aria-hidden="true"></span></button>
       </div>
     </sc-for></section></sc-if>
   </div>
@@ -178,187 +257,194 @@
 
   <!-- Практика -->
   <sc-if value="{{ cur.isPractice }}">
-  <section class="card narrow">
-    <span class="lbl">Практика</span>
-    <h2>{{ cur.pr.title }}</h2>
-    <p style="font-family:var(--serif);font-size:19px;line-height:1.65">{{ cur.pr.task }}</p>
+  <section class="card narrow" aria-labelledby="pr-title">
+    <span class="badge accent" style="align-self:flex-start"><span class="ico i-pencil" aria-hidden="true"></span>Практика</span>
+    <h2 id="pr-title">{{ cur.pr.title }}</h2>
+    <p class="task">{{ cur.pr.task }}</p>
     <h3>Кроки</h3>
     <ol class="olist"><sc-for list="{{ cur.pr.steps }}" as="s"><li>{{ s.text }}</li></sc-for></ol>
-    <details class="tpl"><summary>Приклад висновку <span>як може виглядати результат</span></summary><div class="tpl-body"><p>{{ cur.pr.example }}</p></div></details>
-    <details class="tpl"><summary>Підказка <span>якщо не знаєте, з чого почати</span></summary><div class="tpl-body"><p>{{ cur.pr.hint }}</p></div></details>
+    <details class="tpl"><summary><span class="ico i-quote" aria-hidden="true"></span>Приклад висновку<span class="muted">як може виглядати результат</span><span class="ico i-chevronDown chev" aria-hidden="true"></span></summary><div class="tpl-body"><p>{{ cur.pr.example }}</p></div></details>
+    <details class="tpl"><summary><span class="ico i-bulb" aria-hidden="true"></span>Підказка<span class="muted">якщо не знаєте, з чого почати</span><span class="ico i-chevronDown chev" aria-hidden="true"></span></summary><div class="tpl-body"><p>{{ cur.pr.hint }}</p></div></details>
     <h3>Самоперевірка</h3>
     <p class="muted small">Позначте те, що справді зробили. Це ваша оцінка, а не автоматична перевірка.</p>
-    <sc-for list="{{ cur.pr.rubric }}" as="r"><button class="{{ r.cls }}" onClick="{{ r.toggle }}"><i>{{ r.mark }}</i><span>{{ r.text }}</span></button></sc-for>
-    <div class="nextrow" style="align-items:center">
-      <sc-if value="{{ cur.pr.done }}"><span class="donemsg">✓ Практику виконано</span></sc-if>
-      <sc-if value="{{ cur.pr.notDone }}"><span class="pc">Відмічено {{ cur.pr.cnt }} з {{ cur.pr.tot }}</span></sc-if>
-      <button class="btn pri" onClick="{{ cur.toQuiz }}">До тесту</button>
+    <div class="split" style="gap:8px" role="group" aria-label="Критерії самоперевірки">
+      <sc-for list="{{ cur.pr.rubric }}" as="r"><button class="rub" role="checkbox" aria-checked="{{ r.checked }}" onClick="{{ r.toggle }}"><span class="box"><span class="ico i-check" aria-hidden="true"></span></span><span>{{ r.text }}</span></button></sc-for>
+    </div>
+    <sc-if value="{{ cur.pr.done }}"><div class="alert ok"><span class="ico i-checkCircle" aria-hidden="true"></span><div><b>Практику виконано</b><span>Переходьте до тесту модуля.</span></div></div></sc-if>
+    <div class="nextrow">
+      <span class="muted small">Відмічено {{ cur.pr.cnt }} з {{ cur.pr.tot }}</span>
+      <button class="btn primary" onClick="{{ cur.toQuiz }}">До тесту<span class="ico i-arrowRight" aria-hidden="true"></span></button>
     </div>
   </section>
   </sc-if>
 
-  <!-- Тест: одне питання за раз -->
+  <!-- Тест -->
   <sc-if value="{{ cur.isQuiz }}">
-  <section class="card qcard">
+  <section class="card narrow" aria-labelledby="q-text">
     <div class="qtop">
-      <span class="lbl">Питання {{ cur.qq.num }} з {{ cur.total }} · поріг {{ cur.need }} правильних</span>
-      <span class="pc">Правильно: {{ cur.right }}</span>
+      <span class="lbl">Питання {{ cur.qq.num }} з {{ cur.total }}</span>
+      <span class="badge">Правильно {{ cur.right }} · потрібно {{ cur.need }}</span>
     </div>
-    <div class="qdots"><sc-for list="{{ cur.qdots }}" as="d"><button class="{{ d.cls }}" onClick="{{ d.go }}" aria-label="{{ d.aria }}">{{ d.n }}</button></sc-for></div>
-    <p class="qn">{{ cur.qq.q }}</p>
-    <div class="opts"><sc-for list="{{ cur.qq.opts }}" as="o"><button class="{{ o.cls }}" disabled="{{ o.locked }}" onClick="{{ o.pick }}"><span class="l">{{ o.letter }}</span><span>{{ o.text }}</span><span class="tg">{{ o.tag }}</span></button></sc-for></div>
-    <sc-if value="{{ cur.qq.answered }}"><div class="why"><b>{{ cur.qq.verdict }}</b> {{ cur.qq.why }}</div></sc-if>
+    <div class="qdots" role="group" aria-label="Питання тесту"><sc-for list="{{ cur.qdots }}" as="d"><button class="{{ d.cls }}" aria-current="{{ d.current }}" onClick="{{ d.go }}" aria-label="{{ d.aria }}">{{ d.n }}</button></sc-for></div>
+    <p class="qn" id="q-text">{{ cur.qq.q }}</p>
+    <div class="opts" role="group" aria-labelledby="q-text"><sc-for list="{{ cur.qq.opts }}" as="o"><button class="{{ o.cls }}" disabled="{{ o.locked }}" onClick="{{ o.pick }}"><span class="l" aria-hidden="true">{{ o.letter }}</span><span>{{ o.text }}</span><span class="tg">{{ o.tag }}</span></button></sc-for></div>
+    <sc-if value="{{ cur.qq.answered }}"><div class="{{ cur.qq.whyCls }}" role="status"><span class="{{ cur.qq.whyIcon }}" aria-hidden="true"></span><div><b>{{ cur.qq.verdict }}</b><span>{{ cur.qq.why }}</span></div></div></sc-if>
     <div class="nextrow">
-      <sc-if value="{{ cur.qq.wrong }}"><button class="btn" onClick="{{ cur.qq.retry }}">Спробувати ще раз</button></sc-if>
+      <sc-if value="{{ cur.qq.wrong }}"><button class="btn" onClick="{{ cur.qq.retry }}"><span class="ico i-refresh" aria-hidden="true"></span>Спробувати ще раз</button></sc-if>
       <sc-if value="{{ cur.qq.noRetry }}"><span></span></sc-if>
-      <sc-if value="{{ cur.qq.answered }}"><button class="btn pri" onClick="{{ cur.qq.next }}">{{ cur.qq.nextLabel }}</button></sc-if>
+      <sc-if value="{{ cur.qq.answered }}"><button class="btn primary" onClick="{{ cur.qq.next }}">{{ cur.qq.nextLabel }}<span class="ico i-arrowRight" aria-hidden="true"></span></button></sc-if>
     </div>
-    <sc-if value="{{ cur.allAnswered }}">
-      <div class="note y"><b>{{ cur.quizTitle }}</b><span>{{ cur.quizMsg }}</span></div>
-    </sc-if>
+    <sc-if value="{{ cur.allAnswered }}"><div class="{{ cur.quizCls }}"><span class="{{ cur.quizIcon }}" aria-hidden="true"></span><div><b>{{ cur.quizTitle }}</b><span>{{ cur.quizMsg }}</span></div></div></sc-if>
   </section>
   </sc-if>
 
   <!-- Підсумок -->
   <sc-if value="{{ cur.isNotes }}">
-  <section class="card narrow">
-    <span class="lbl">Підсумок модуля</span>
-    <h2>Що ви застосуєте цього тижня?</h2>
-    <p class="muted">Запишіть 3 речі своїми словами — так матеріал запам’ятовується краще, ніж після перечитування. Нотатки зберігаються лише в цьому браузері.</p>
-    <textarea rows="7" placeholder="1. …&#10;2. …&#10;3. …" value="{{ cur.note }}" onInput="{{ cur.onNote }}"></textarea>
+  <section class="card narrow" aria-labelledby="sum-title">
+    <span class="badge accent" style="align-self:flex-start"><span class="ico i-note" aria-hidden="true"></span>Підсумок модуля</span>
+    <h2 id="sum-title">Що ви застосуєте цього тижня?</h2>
+    <p class="muted">Запишіть три речі своїми словами — так матеріал запам’ятовується краще, ніж після перечитування.</p>
+    <div class="field">
+      <label for="note-area">Мої нотатки</label>
+      <textarea id="note-area" rows="7" placeholder="1. …&#10;2. …&#10;3. …" value="{{ cur.note }}" onInput="{{ cur.onNote }}" aria-describedby="note-hint"></textarea>
+      <span class="hint" id="note-hint">Зберігається автоматично в цьому браузері. Не записуйте сюди паролі чи ключі.</span>
+    </div>
     <sc-if value="{{ cur.hasSources }}">
       <div class="srcs"><span class="lbl">Джерела модуля</span>
-        <sc-for list="{{ cur.sources }}" as="so"><div class="src"><a href="{{ so.url }}" target="_blank" rel="noopener">{{ so.title }}</a><span>{{ so.note }}</span></div></sc-for>
+        <sc-for list="{{ cur.sources }}" as="so"><div class="src"><a href="{{ so.url }}" target="_blank" rel="noopener">{{ so.title }}<span class="ico i-external" aria-hidden="true"></span><span class="sr-only"> (відкриється в новій вкладці)</span></a><span>{{ so.note }}</span></div></sc-for>
       </div>
     </sc-if>
     <div class="nextrow">
-      <sc-if value="{{ cur.hasPrev }}"><button class="btn" onClick="{{ cur.goPrev }}">← Модуль {{ cur.prevNum }}</button></sc-if>
-      <sc-if value="{{ cur.hasNext }}"><button class="btn pri" onClick="{{ cur.goNext }}">Модуль {{ cur.nextNum }}: {{ cur.nextTitle }}</button></sc-if>
-      <sc-if value="{{ cur.isLast }}"><button class="btn pri" onClick="{{ openProjects }}">Перейти до проєктів</button></sc-if>
+      <sc-if value="{{ cur.hasPrev }}"><button class="btn" onClick="{{ cur.goPrev }}"><span class="ico i-arrowLeft" aria-hidden="true"></span>Модуль {{ cur.prevNum }}</button></sc-if>
+      <sc-if value="{{ cur.noPrevMod }}"><span></span></sc-if>
+      <sc-if value="{{ cur.hasNext }}"><button class="btn primary" onClick="{{ cur.goNext }}">Наступний модуль<span class="ico i-arrowRight" aria-hidden="true"></span></button></sc-if>
+      <sc-if value="{{ cur.isLast }}"><button class="btn primary" onClick="{{ openProjects }}">Перейти до проєктів<span class="ico i-arrowRight" aria-hidden="true"></span></button></sc-if>
     </div>
   </section>
   </sc-if>
 </div>
 </sc-if>
 
-<!-- ================= МАЙСТЕРНЯ ================= -->
+<!-- ================= ТРЕНАЖЕРИ ================= -->
 <sc-if value="{{ isWork }}">
 <div class="page">
-  <div class="mhead">
-    <h1>Майстерня</h1>
-    <p class="lead">Тренажери до уроків. Вони працюють за заданими правилами й не звертаються до моделі.</p>
+  <div class="phead">
+    <h1>Тренажери</h1>
+    <p class="lead">Закріплюйте навички з уроків на власних прикладах. Інструменти працюють за заданими правилами й не звертаються до моделі.</p>
   </div>
-  <div class="tabs"><sc-for list="{{ wk.tabs }}" as="t"><button class="{{ t.cls }}" onClick="{{ t.go }}">{{ t.label }}</button></sc-for></div>
+  <div class="tabs" role="tablist" aria-label="Тренажери"><sc-for list="{{ wk.tabs }}" as="t"><button class="tab" role="tab" aria-selected="{{ t.selected }}" onClick="{{ t.go }}"><span class="{{ t.icon }}" aria-hidden="true"></span>{{ t.label }}</button></sc-for></div>
 
   <sc-if value="{{ wk.isBuilder }}">
   <div class="lab">
-    <div class="labL card">
+    <div class="card col">
+      <div class="card-head"><h3>Складіть запит із п’яти частин</h3></div>
       <div class="chips">
-        <button class="chip btnchip" onClick="{{ lab.presetResearch }}">Приклад: дослідження</button>
-        <button class="chip btnchip" onClick="{{ lab.presetSite }}">Приклад: сайт</button>
-        <button class="chip btnchip" onClick="{{ lab.clear }}">Очистити</button>
+        <button class="chip" onClick="{{ lab.presetResearch }}">Приклад: дослідження</button>
+        <button class="chip" onClick="{{ lab.presetSite }}">Приклад: сайт</button>
+        <button class="chip" onClick="{{ lab.clear }}" disabled="{{ lab.empty }}"><span class="ico i-x" aria-hidden="true"></span>Очистити</button>
       </div>
       <sc-for list="{{ lab.fields }}" as="f">
-        <div class="fld"><label>{{ f.label }}</label><small>{{ f.hint }}</small>
-          <textarea rows="{{ f.rows }}" placeholder="{{ f.ph }}" value="{{ f.value }}" onInput="{{ f.on }}"></textarea></div>
+        <div class="field"><label for="{{ f.id }}">{{ f.label }}</label><span class="hint" id="{{ f.hid }}">{{ f.hint }}</span>
+          <textarea id="{{ f.id }}" rows="{{ f.rows }}" placeholder="{{ f.ph }}" value="{{ f.value }}" onInput="{{ f.on }}" aria-describedby="{{ f.hid }}"></textarea></div>
       </sc-for>
     </div>
-    <div class="labR">
+    <div class="col">
       <div class="card">
-        <div class="score"><div><span class="lbl">Повнота промпту</span><div><span class="big">{{ lab.score }}</span><span class="pc">%</span></div></div><span style="font-weight:600;color:var(--ac)">{{ lab.level }}</span></div>
-        <progress value="{{ lab.score }}" max="100"></progress>
-        <sc-for list="{{ lab.checks }}" as="c"><div class="{{ c.cls }}"><i>{{ c.mark }}</i><span>{{ c.text }}</span></div></sc-for>
+        <div class="card-head"><div><span class="lbl">Повнота запиту</span><div><span class="big">{{ lab.score }}</span><span class="muted">%</span></div></div><span class="badge accent">{{ lab.level }}</span></div>
+        <progress value="{{ lab.score }}" max="100" aria-label="Повнота запиту"></progress>
+        <sc-for list="{{ lab.checks }}" as="c"><div class="{{ c.cls }}"><span class="{{ c.icon }}" aria-hidden="true"></span><span>{{ c.text }}</span></div></sc-for>
         <p class="muted small">Рахуються лише заповнені поля. Правдивість фактів і поведінку моделі конструктор не оцінює.</p>
       </div>
       <div class="card"><span class="lbl">Готовий промпт</span><div class="out">{{ lab.out }}</div>
-        <div><button class="btn pri sm" onClick="{{ lab.copy }}">{{ lab.copyLabel }}</button></div></div>
+        <div><button class="btn primary" onClick="{{ lab.copy }}" disabled="{{ lab.empty }}"><span class="{{ lab.copyIcon }}" aria-hidden="true"></span>{{ lab.copyLabel }}</button></div></div>
     </div>
   </div>
   </sc-if>
 
   <sc-if value="{{ wk.isTokens }}">
   <div class="lab">
-    <div class="labL card">
-      <div class="fld"><label>Ваш текст або промпт</label>
-        <textarea rows="10" placeholder="Вставте текст сюди…" value="{{ tk.text }}" onInput="{{ tk.on }}"></textarea></div>
-      <div class="chips"><button class="chip btnchip" onClick="{{ tk.loadBefore }}">Багатослівний приклад</button><button class="chip btnchip" onClick="{{ tk.loadAfter }}">Стислий приклад</button></div>
+    <div class="card col">
+      <div class="field"><label for="tok-area">Ваш текст або промпт</label>
+        <textarea id="tok-area" rows="10" placeholder="Вставте текст сюди…" value="{{ tk.text }}" onInput="{{ tk.on }}"></textarea></div>
+      <div class="chips"><button class="chip" onClick="{{ tk.loadBefore }}">Багатослівний приклад</button><button class="chip" onClick="{{ tk.loadAfter }}">Стислий приклад</button><button class="chip" onClick="{{ tk.clear }}" disabled="{{ tk.empty }}"><span class="ico i-x" aria-hidden="true"></span>Очистити</button></div>
     </div>
-    <div class="labR">
+    <div class="col">
       <div class="card">
         <div class="stats">
           <div class="stat"><b>{{ tk.chars }}</b><span>символів</span></div>
           <div class="stat"><b>{{ tk.words }}</b><span>слів</span></div>
           <div class="stat"><b>≈{{ tk.tokens }}</b><span>токенів</span></div>
         </div>
-        <p class="muted small">{{ tk.note }}</p>
+        <p class="muted small" aria-live="polite">{{ tk.note }}</p>
       </div>
       <div class="card"><span class="lbl">Що дає стислість</span>
-        <p>Багатослівний приклад — ≈{{ tk.exBefore }} токенів, стислий — ≈{{ tk.exAfter }}. Це на <b style="color:var(--ok)">{{ tk.saved }}%</b> менше, а результат точніший.</p>
-        <p class="muted small">Оцінка орієнтовна. Точну кількість показує токенізатор постачальника або дані використання в API.</p></div>
+        <p>Багатослівний приклад — ≈{{ tk.exBefore }} токенів, стислий — ≈{{ tk.exAfter }}. Це на <b style="color:var(--success)">{{ tk.saved }}%</b> менше, а результат точніший.</p>
+        <div class="alert info"><span class="ico i-info" aria-hidden="true"></span><div><span>Оцінка орієнтовна. Точну кількість показує токенізатор постачальника або дані використання в API.</span></div></div></div>
     </div>
   </div>
   </sc-if>
 
   <sc-if value="{{ wk.isCost }}">
-  <div class="call warn"><b>Тарифи нижче — умовні навчальні числа</b><span>Підставте чинні ціни свого постачальника. Це текстова оцінка: без інструментів, зображень, податків, автоматизації та кешу.</span></div>
+  <div class="alert warn"><span class="ico i-alert" aria-hidden="true"></span><div><b>Тарифи нижче — умовні навчальні числа</b><span>Підставте чинні ціни свого постачальника. Це текстова оцінка: без інструментів, зображень, податків, автоматизації та кешу.</span></div></div>
   <div class="row2">
     <sc-for list="{{ cost.scen }}" as="sc">
       <div class="card">
         <h3>Сценарій {{ sc.name }}</h3>
         <div class="f2">
-          <sc-for list="{{ sc.fields }}" as="f"><div class="fld"><label>{{ f.label }}</label><input type="number" min="0" step="any" value="{{ f.value }}" onInput="{{ f.on }}"></div></sc-for>
+          <sc-for list="{{ sc.fields }}" as="f"><div class="field"><label for="{{ f.id }}">{{ f.label }}</label><input id="{{ f.id }}" type="number" inputmode="decimal" min="{{ f.min }}" step="any" value="{{ f.value }}" onInput="{{ f.on }}" aria-invalid="{{ f.invalid }}" aria-describedby="{{ f.eid }}"><sc-if value="{{ f.hasErr }}"><span class="err" id="{{ f.eid }}"><span class="ico i-alert" aria-hidden="true"></span>{{ f.err }}</span></sc-if></div></sc-for>
         </div>
-        <div><div class="res">{{ sc.total }}</div><p class="muted small">{{ sc.per }}</p></div>
+        <div aria-live="polite"><div class="res">{{ sc.total }}</div><p class="muted small">{{ sc.per }}</p></div>
       </div>
     </sc-for>
   </div>
-  <div class="card"><h3>Порівняння</h3><p>{{ cost.cmp }}</p><pre class="blk">(вхід × тариф входу + вихід × тариф виходу) ÷ 1 000 000 × результати × спроби</pre>
+  <div class="card"><h3>Порівняння</h3><p aria-live="polite">{{ cost.cmp }}</p><pre class="blk">(вхід × тариф входу + вихід × тариф виходу) ÷ 1 000 000 × результати × спроби</pre>
     <p class="muted small">Дешевший сценарій кращий лише тоді, коли якість не падає. Спроби можна вказати як середнє, наприклад 1,2.</p></div>
   </sc-if>
 
   <sc-if value="{{ wk.isAgent }}">
   <div class="lab">
-    <div class="labL card">
-      <div><button class="chip btnchip" onClick="{{ ag.example }}">Заповнити прикладом</button></div>
-      <sc-for list="{{ ag.fields }}" as="f"><div class="fld"><label>{{ f.label }}</label><textarea rows="2" placeholder="{{ f.ph }}" value="{{ f.value }}" onInput="{{ f.on }}"></textarea></div></sc-for>
+    <div class="card col">
+      <div class="card-head"><h3>Паспорт агента</h3><button class="chip" onClick="{{ ag.example }}">Заповнити прикладом</button></div>
+      <sc-for list="{{ ag.fields }}" as="f"><div class="field"><label for="{{ f.id }}">{{ f.label }}</label><textarea id="{{ f.id }}" rows="2" placeholder="{{ f.ph }}" value="{{ f.value }}" onInput="{{ f.on }}"></textarea></div></sc-for>
     </div>
-    <div class="labR">
-      <div class="call"><b>Це паспорт, а не запущений агент</b><span>Перенесіть його у свою платформу. Інструменти, дозволи й ліміти налаштовують там.</span></div>
-      <div class="card"><span class="lbl">Конфігурація</span><pre class="blk">{{ ag.out }}</pre><div><button class="btn pri sm" onClick="{{ ag.copy }}">{{ ag.copyLabel }}</button></div></div>
+    <div class="col">
+      <div class="alert info"><span class="ico i-info" aria-hidden="true"></span><div><b>Це паспорт, а не запущений агент</b><span>Перенесіть його у свою платформу. Інструменти, дозволи й ліміти налаштовують там.</span></div></div>
+      <div class="card"><span class="lbl">Конфігурація</span><pre class="blk">{{ ag.out }}</pre><div><button class="btn primary" onClick="{{ ag.copy }}"><span class="{{ ag.copyIcon }}" aria-hidden="true"></span>{{ ag.copyLabel }}</button></div></div>
       <div class="card"><h3>Перевірте перед запуском</h3>
-        <ul class="olist"><li>Правильне завдання.</li><li>Брак даних і збій інструмента.</li><li>Чужа інструкція в документі.</li><li>Недозволена зовнішня дія.</li><li>Зупинка на ліміті.</li></ul></div>
+        <ul class="olist"><li>Агент правильно розуміє завдання.</li><li>Що станеться, якщо бракує даних чи інструмент збоїть.</li><li>Як він реагує на чужу інструкцію в документі.</li><li>Чи блокуються недозволені зовнішні дії.</li><li>Чи зупиняється на ліміті кроків і бюджету.</li></ul></div>
     </div>
   </div>
   </sc-if>
 
   <sc-if value="{{ wk.isEvid }}">
   <div class="lab">
-    <div class="labL card">
+    <div class="card col">
+      <div class="card-head"><h3>Картка доказу</h3></div>
       <p class="muted small">Відкрийте джерело самостійно й заповніть картку. Інструмент не завантажує сайти й не перевіряє істинність.</p>
-      <sc-for list="{{ ev.fields }}" as="f"><div class="fld"><label>{{ f.label }}</label><textarea rows="2" placeholder="{{ f.ph }}" value="{{ f.value }}" onInput="{{ f.on }}"></textarea></div></sc-for>
-      <div class="fld"><label>Статус</label><div class="chips"><sc-for list="{{ ev.statuses }}" as="s"><button class="{{ s.cls }}" onClick="{{ s.pick }}">{{ s.label }}</button></sc-for></div></div>
+      <sc-for list="{{ ev.fields }}" as="f"><div class="field"><label for="{{ f.id }}">{{ f.label }}</label><textarea id="{{ f.id }}" rows="2" placeholder="{{ f.ph }}" value="{{ f.value }}" onInput="{{ f.on }}"></textarea></div></sc-for>
+      <div class="field"><span class="lbl" id="ev-status">Статус перевірки</span><div class="chips" role="group" aria-labelledby="ev-status"><sc-for list="{{ ev.statuses }}" as="s"><button class="chip" aria-pressed="{{ s.pressed }}" onClick="{{ s.pick }}">{{ s.label }}</button></sc-for></div></div>
     </div>
-    <div class="labR">
-      <div class="card"><span class="lbl">Ваш запис</span><pre class="blk">{{ ev.out }}</pre><div><button class="btn pri sm" onClick="{{ ev.copy }}">{{ ev.copyLabel }}</button></div></div>
-      <div class="call"><b>Перевірте зв’язок</b><span>Посилання має підтримувати саме ваше твердження. Сторінка про продукт загалом не підтверджує конкретну ціну чи ліміт.</span></div>
+    <div class="col">
+      <div class="card"><span class="lbl">Ваш запис</span><pre class="blk">{{ ev.out }}</pre><div><button class="btn primary" onClick="{{ ev.copy }}"><span class="{{ ev.copyIcon }}" aria-hidden="true"></span>{{ ev.copyLabel }}</button></div></div>
+      <div class="alert info"><span class="ico i-info" aria-hidden="true"></span><div><b>Перевірте зв’язок</b><span>Посилання має підтримувати саме ваше твердження. Сторінка про продукт загалом не підтверджує конкретну ціну чи ліміт.</span></div></div>
     </div>
   </div>
   </sc-if>
 
   <sc-if value="{{ wk.isSim }}">
-  <div class="card qcard">
+  <div class="card narrow">
     <sc-if value="{{ sim.running }}">
-      <span class="lbl">Сценарій {{ sim.num }} з {{ sim.total }}</span>
+      <div class="qtop"><span class="lbl">Сценарій {{ sim.num }} з {{ sim.total }}</span><span class="badge">Правильних рішень: {{ sim.correct }}</span></div>
       <h2>{{ sim.title }}</h2>
-      <p style="font-family:var(--serif);font-size:19px;line-height:1.65">{{ sim.text }}</p>
-      <div class="opts"><sc-for list="{{ sim.opts }}" as="o"><button class="{{ o.cls }}" disabled="{{ o.locked }}" onClick="{{ o.pick }}"><span class="l">{{ o.letter }}</span><span>{{ o.text }}</span><span class="tg">{{ o.tag }}</span></button></sc-for></div>
-      <sc-if value="{{ sim.answered }}"><div class="why"><b>{{ sim.verdict }}</b> {{ sim.explain }}</div><div><button class="btn pri" onClick="{{ sim.next }}">Наступний сценарій</button></div></sc-if>
+      <p class="task">{{ sim.text }}</p>
+      <div class="opts"><sc-for list="{{ sim.opts }}" as="o"><button class="{{ o.cls }}" disabled="{{ o.locked }}" onClick="{{ o.pick }}"><span class="l" aria-hidden="true">{{ o.letter }}</span><span>{{ o.text }}</span><span class="tg">{{ o.tag }}</span></button></sc-for></div>
+      <sc-if value="{{ sim.answered }}"><div class="{{ sim.whyCls }}" role="status"><span class="{{ sim.whyIcon }}" aria-hidden="true"></span><div><b>{{ sim.verdict }}</b><span>{{ sim.explain }}</span></div></div><div><button class="btn primary" onClick="{{ sim.next }}">{{ sim.nextLabel }}<span class="ico i-arrowRight" aria-hidden="true"></span></button></div></sc-if>
     </sc-if>
     <sc-if value="{{ sim.finished }}">
       <span class="lbl">Результат</span>
-      <div><span class="big">{{ sim.correct }}</span><span class="pc"> з {{ sim.total }}</span></div>
+      <div><span class="big">{{ sim.correct }}</span><span class="muted"> з {{ sim.total }}</span></div>
       <p class="muted">Сценарії завершено. Повторіть уроки з тем, які викликали сумнів.</p>
-      <div><button class="btn" onClick="{{ sim.restart }}">Пройти знову</button></div>
+      <div><button class="btn" onClick="{{ sim.restart }}"><span class="ico i-refresh" aria-hidden="true"></span>Пройти знову</button></div>
     </sc-if>
   </div>
   </sc-if>
@@ -369,33 +455,37 @@
 <sc-if value="{{ isProjects }}">
 <div class="page">
   <sc-if value="{{ pj.list }}">
-    <div class="mhead">
+    <div class="phead">
       <h1>Проєкти для портфоліо</h1>
-      <p class="lead">Три реальні роботи з критеріями. Самооцінку доповніть відгуком іншої людини — для відмітки про проходження потрібні всі три.</p>
+      <p class="lead">Три реальні роботи з критеріями. Самооцінку доповніть відгуком іншої людини. Для відмітки про проходження потрібні всі три.</p>
     </div>
-    <div class="grid">
+    <div class="projects">
       <sc-for list="{{ pj.items }}" as="p">
-        <button class="mcard" onClick="{{ p.open }}">
-          <span class="mnum">Проєкт {{ p.num }}</span><span class="mtitle">{{ p.title }}</span><span class="mdesc">{{ p.desc }}</span>
-          <span><progress value="{{ p.pct }}" max="100"></progress></span>
-          <span class="mmeta"><span>{{ p.duration }}</span><span>{{ p.status }}</span></span>
+        <button class="pcard" onClick="{{ p.open }}">
+          <span class="ico-tile"><span class="{{ p.icon }}" aria-hidden="true"></span></span>
+          <h3>{{ p.title }}</h3>
+          <p>{{ p.desc }}</p>
+          <progress class="{{ p.barCls }}" value="{{ p.pct }}" max="100" aria-hidden="true"></progress>
+          <span class="foot2"><span><span class="ico i-clock" aria-hidden="true"></span> {{ p.duration }}</span><span class="{{ p.badgeCls }}">{{ p.status }}</span></span>
         </button>
       </sc-for>
     </div>
   </sc-if>
   <sc-if value="{{ pj.detail }}">
-    <div class="crumb"><button onClick="{{ pj.back }}">Проєкти</button><span>/</span><span>{{ pj.cur.title }}</span></div>
+    <nav class="crumb" aria-label="Навігаційний ланцюжок"><button onClick="{{ pj.back }}"><span class="ico i-arrowLeft" aria-hidden="true"></span>Усі проєкти</button></nav>
     <div class="card narrow">
-      <span class="pc">{{ pj.cur.duration }} · спирається на модулі {{ pj.cur.mods }}</span>
-      <h1 style="font-size:clamp(28px,3.6vw,40px)">{{ pj.cur.title }}</h1>
-      <p style="font-family:var(--serif);font-size:19px;line-height:1.65">{{ pj.cur.brief }}</p>
+      <div class="meta"><span><span class="ico i-clock" aria-hidden="true"></span>{{ pj.cur.duration }}</span><span><span class="ico i-book" aria-hidden="true"></span>Модулі {{ pj.cur.mods }}</span></div>
+      <h1 style="font-size:clamp(28px,3.4vw,40px)">{{ pj.cur.title }}</h1>
+      <p class="task">{{ pj.cur.brief }}</p>
       <h3>Етапи</h3>
       <ol class="olist"><sc-for list="{{ pj.cur.steps }}" as="s"><li>{{ s.text }}</li></sc-for></ol>
-      <div class="note"><b>Що має бути в результаті</b><span>{{ pj.cur.deliverables }}</span></div>
+      <div class="alert info"><span class="ico i-target" aria-hidden="true"></span><div><b>Що має бути в результаті</b><span>{{ pj.cur.deliverables }}</span></div></div>
       <h3>Самоперевірка</h3>
-      <sc-for list="{{ pj.cur.rubric }}" as="r"><button class="{{ r.cls }}" onClick="{{ r.toggle }}"><i>{{ r.mark }}</i><span>{{ r.text }}</span></button></sc-for>
-      <div class="fld"><label>Відгук іншої людини або план його отримати</label><textarea rows="3" placeholder="Хто перегляне роботу і що зауважив…" value="{{ pj.cur.review }}" onInput="{{ pj.cur.onReview }}"></textarea></div>
-      <sc-if value="{{ pj.cur.done }}"><span class="donemsg">✓ Проєкт завершено</span></sc-if>
+      <div class="split" style="gap:8px" role="group" aria-label="Критерії самоперевірки">
+        <sc-for list="{{ pj.cur.rubric }}" as="r"><button class="rub" role="checkbox" aria-checked="{{ r.checked }}" onClick="{{ r.toggle }}"><span class="box"><span class="ico i-check" aria-hidden="true"></span></span><span>{{ r.text }}</span></button></sc-for>
+      </div>
+      <div class="field"><label for="pj-review">Відгук іншої людини або план його отримати</label><textarea id="pj-review" rows="3" placeholder="Хто перегляне роботу і що зауважив…" value="{{ pj.cur.review }}" onInput="{{ pj.cur.onReview }}"></textarea></div>
+      <sc-if value="{{ pj.cur.done }}"><div class="alert ok"><span class="ico i-checkCircle" aria-hidden="true"></span><div><b>Проєкт завершено</b><span>Усі критерії самоперевірки відмічено.</span></div></div></sc-if>
     </div>
   </sc-if>
 </div>
@@ -404,30 +494,33 @@
 <!-- ================= БІБЛІОТЕКА ================= -->
 <sc-if value="{{ isLib }}">
 <div class="page">
-  <div class="mhead">
+  <div class="phead">
     <h1>Бібліотека</h1>
-    <p class="lead">Шаблони промптів з уроків, запити для щоденної роботи та глосарій. Замініть текст у квадратних дужках своїми даними.</p>
+    <p class="lead">Шаблони промптів з уроків, запити для щоденної роботи та глосарій термінів. Замініть текст у квадратних дужках своїми даними.</p>
   </div>
-  <div class="tabs"><sc-for list="{{ lib.tabs }}" as="t"><button class="{{ t.cls }}" onClick="{{ t.go }}">{{ t.label }}</button></sc-for></div>
-  <input type="search" placeholder="Пошук за словом" value="{{ lib.q }}" onInput="{{ lib.on }}" aria-label="Пошук" style="max-width:480px">
+  <div class="tabs" role="tablist" aria-label="Розділи бібліотеки"><sc-for list="{{ lib.tabs }}" as="t"><button class="tab" role="tab" aria-selected="{{ t.selected }}" onClick="{{ t.go }}"><span class="{{ t.icon }}" aria-hidden="true"></span>{{ t.label }}</button></sc-for></div>
+  <div class="libbar">
+    <div class="search"><span class="ico i-search" aria-hidden="true"></span><label class="sr-only" for="lib-search">{{ lib.searchLabel }}</label><input id="lib-search" type="search" placeholder="{{ lib.searchLabel }}" value="{{ lib.q }}" onInput="{{ lib.on }}"><sc-if value="{{ lib.hasQ }}"><button class="btn icon ghost clear" onClick="{{ lib.clearQ }}" aria-label="Очистити пошук"><span class="ico i-x" aria-hidden="true"></span></button></sc-if></div>
+    <sc-if value="{{ lib.isPrompts }}"><div class="chips scroll" role="group" aria-label="Категорії"><sc-for list="{{ lib.cats }}" as="c"><button class="chip" aria-pressed="{{ c.pressed }}" onClick="{{ c.pick }}">{{ c.label }}</button></sc-for></div></sc-if>
+    <span class="count" aria-live="polite">{{ lib.count }}</span>
+  </div>
   <sc-if value="{{ lib.isPrompts }}">
-    <div class="chips"><sc-for list="{{ lib.cats }}" as="c"><button class="{{ c.cls }}" onClick="{{ c.pick }}">{{ c.label }}</button></sc-for></div>
     <div class="lib">
       <sc-for list="{{ lib.items }}" as="it">
-        <div class="item">
-          <sc-if value="{{ it.hasCat }}"><span class="cat">{{ it.cat }}</span></sc-if>
-          <b>{{ it.title }}</b>
+        <article class="item">
+          <sc-if value="{{ it.hasCat }}"><span class="badge" style="align-self:flex-start">{{ it.cat }}</span></sc-if>
+          <h3>{{ it.title }}</h3>
           <sc-if value="{{ it.hasUse }}"><span class="muted small">{{ it.use }}</span></sc-if>
           <pre>{{ it.text }}</pre>
-          <div class="acts"><button class="btn sm" onClick="{{ it.copy }}">{{ it.copyLabel }}</button><button class="{{ it.favCls }}" onClick="{{ it.fav }}">{{ it.favLabel }}</button></div>
-        </div>
+          <div class="acts"><button class="btn sm" onClick="{{ it.copy }}"><span class="{{ it.copyIcon }}" aria-hidden="true"></span>{{ it.copyLabel }}</button><button class="btn sm ghost fav" aria-pressed="{{ it.favPressed }}" onClick="{{ it.fav }}"><span class="{{ it.favIcon }}" aria-hidden="true"></span>{{ it.favLabel }}</button></div>
+        </article>
       </sc-for>
     </div>
-    <sc-if value="{{ lib.empty }}"><p class="muted">Нічого не знайдено. Спробуйте інше слово або категорію «Усі».</p></sc-if>
+    <sc-if value="{{ lib.empty }}"><div class="empty"><span class="{{ lib.emptyIcon }}" aria-hidden="true"></span><b>{{ lib.emptyTitle }}</b><span>{{ lib.emptyText }}</span><button class="btn" onClick="{{ lib.reset }}">Показати всі шаблони</button></div></sc-if>
   </sc-if>
   <sc-if value="{{ lib.isGloss }}">
-    <div class="gl"><sc-for list="{{ lib.terms }}" as="g"><div><b>{{ g.term }}</b><span>{{ g.def }}</span></div></sc-for></div>
-    <sc-if value="{{ lib.emptyG }}"><p class="muted">Такого терміна немає. Спробуйте інше слово.</p></sc-if>
+    <dl class="gl"><sc-for list="{{ lib.terms }}" as="g"><div><dt>{{ g.term }}</dt><dd>{{ g.def }}</dd></div></sc-for></dl>
+    <sc-if value="{{ lib.emptyG }}"><div class="empty"><span class="ico i-search" aria-hidden="true"></span><b>Такого терміна немає</b><span>Спробуйте інше слово або очистьте пошук.</span><button class="btn" onClick="{{ lib.clearQ }}">Очистити пошук</button></div></sc-if>
   </sc-if>
 </div>
 </sc-if>
@@ -435,38 +528,47 @@
 <!-- ================= ПРОГРЕС ================= -->
 <sc-if value="{{ isProgress }}">
 <div class="page">
-  <div class="mhead">
+  <div class="phead">
     <h1>Мій прогрес</h1>
-    <p class="lead">{{ pg.summary }}</p>
+    <p class="lead">Прогрес зберігається лише в цьому браузері. На іншому пристрої перенесіть його резервною копією.</p>
+  </div>
+  <div class="stats four">
+    <div class="stat"><b>{{ pg.sMods }}</b><span>модулів завершено</span></div>
+    <div class="stat"><b>{{ pg.sLessons }}</b><span>уроків засвоєно</span></div>
+    <div class="stat"><b>{{ pg.sProj }}</b><span>проєктів виконано</span></div>
+    <div class="stat"><b>{{ pg.sExam }}</b><span>найкращий іспит</span></div>
   </div>
   <div class="row2">
-    <section class="card">
-      <h3>Модулі</h3>
+    <section class="card" aria-labelledby="pg-mods">
+      <h3 id="pg-mods">Модулі</h3>
       <div>
-        <sc-for list="{{ pg.rows }}" as="r"><div class="mrow"><div class="nm"><b>{{ r.num }}</b>{{ r.title }}</div><progress value="{{ r.pct }}" max="100"></progress><button class="{{ r.cls }}" onClick="{{ r.open }}">{{ r.status }}</button></div></sc-for>
+        <sc-for list="{{ pg.rows }}" as="r"><div class="{{ r.cls }}"><span class="{{ r.icon }}" aria-hidden="true"></span><div class="nm"><b>{{ r.num }}</b>{{ r.title }}</div><progress class="{{ r.barCls }}" value="{{ r.pct }}" max="100" aria-label="{{ r.aria }}"></progress><button class="btn sm ghost" onClick="{{ r.open }}">{{ r.act }}</button></div></sc-for>
       </div>
     </section>
     <div class="split">
-      <section class="card">
-        <h3>Повторення помилок</h3>
-        <sc-if value="{{ pg.noMiss }}"><p class="muted">Невиправлених помилок немає. Неправильні відповіді з тестів з’являтимуться тут, доки ви їх не виправите.</p></sc-if>
-        <sc-for list="{{ pg.misses }}" as="m"><div class="miss"><b>{{ m.q }}</b><span class="muted">Правильно: {{ m.right }}. {{ m.why }}</span><div><button class="btn sm" onClick="{{ m.open }}">Перейти до тесту</button></div></div></sc-for>
+      <section class="card" aria-labelledby="pg-miss">
+        <h3 id="pg-miss">Повторення помилок</h3>
+        <sc-if value="{{ pg.noMiss }}"><div class="empty" style="padding:28px 16px"><span class="ico i-checkCircle" aria-hidden="true"></span><b>Невиправлених помилок немає</b><span>Неправильні відповіді з тестів з’являтимуться тут, доки ви їх не виправите.</span></div></sc-if>
+        <sc-for list="{{ pg.misses }}" as="m"><div class="miss"><b>{{ m.q }}</b><span class="muted small">Правильна відповідь: {{ m.right }}. {{ m.why }}</span><div><button class="btn sm" onClick="{{ m.open }}">Повторити питання</button></div></div></sc-for>
       </section>
-      <section class="card">
-        <h3>Резервна копія</h3>
-        <p class="muted small">Інший браузер чи пристрій має окремий прогрес. Перенесіть його текстовою копією.</p>
-        <div class="acts"><button class="btn pri sm" onClick="{{ pg.makeBackup }}">Створити копію</button><button class="btn sm" onClick="{{ pg.copyBackup }}">{{ pg.copyLabel }}</button></div>
-        <textarea class="mono-area" rows="5" placeholder="Тут з’явиться копія. Щоб відновити, вставте сюди збережений текст." value="{{ pg.backup }}" onInput="{{ pg.onBackup }}"></textarea>
-        <div><button class="btn sm" onClick="{{ pg.restore }}">Відновити з копії</button></div>
-        <span class="saved">{{ pg.msg }}</span>
+      <section class="card" aria-labelledby="pg-bk">
+        <h3 id="pg-bk">Резервна копія</h3>
+        <p class="muted small">Створіть копію, скопіюйте текст і збережіть його у файл. Щоб відновити, вставте текст у поле й натисніть «Відновити».</p>
+        <div class="btn-row"><button class="btn sm" onClick="{{ pg.makeBackup }}"><span class="ico i-save" aria-hidden="true"></span>Створити копію</button><button class="btn sm" onClick="{{ pg.copyBackup }}"><span class="{{ pg.copyIcon }}" aria-hidden="true"></span>{{ pg.copyLabel }}</button></div>
+        <div class="field">
+          <label for="bk-area">Текст резервної копії</label>
+          <textarea id="bk-area" class="mono-area" rows="5" placeholder="Тут з’явиться копія або вставте збережений текст" value="{{ pg.backup }}" onInput="{{ pg.onBackup }}" aria-invalid="{{ pg.bkInvalid }}" aria-describedby="bk-msg"></textarea>
+        </div>
+        <div><button class="btn sm primary" onClick="{{ pg.restore }}" disabled="{{ pg.bkEmpty }}"><span class="ico i-upload" aria-hidden="true"></span>Відновити з копії</button></div>
+        <sc-if value="{{ pg.hasMsg }}"><div class="{{ pg.msgCls }}" id="bk-msg" role="status"><span class="{{ pg.msgIcon }}" aria-hidden="true"></span><div><span>{{ pg.msg }}</span></div></div></sc-if>
       </section>
-      <section class="card">
-        <h3>Відмітка про проходження</h3>
+      <section class="card" aria-labelledby="pg-cert">
+        <h3 id="pg-cert">Відмітка про проходження</h3>
         <p class="muted small">Потрібно завершити всі модулі й три проєкти та скласти іспит щонайменше на 80%. Це особистий запис, а не акредитований сертифікат.</p>
-        <div class="fld"><label>Ім’я для відмітки</label><input type="text" maxlength="100" placeholder="Ваше ім’я" value="{{ pg.name }}" onInput="{{ pg.onName }}"></div>
-        <sc-for list="{{ pg.conds }}" as="c"><div class="{{ c.cls }}"><i>{{ c.mark }}</i><span>{{ c.text }}</span></div></sc-for>
+        <div class="field"><label for="pg-name">Ім’я для відмітки</label><input id="pg-name" type="text" maxlength="100" autocomplete="name" placeholder="Ваше ім’я" value="{{ pg.name }}" onInput="{{ pg.onName }}"></div>
+        <sc-for list="{{ pg.conds }}" as="c"><div class="{{ c.cls }}"><span class="{{ c.icon }}" aria-hidden="true"></span><span>{{ c.text }}</span></div></sc-for>
         <sc-if value="{{ pg.certOk }}">
-          <div class="cert"><span class="pc">Академія ШІ</span><h2>{{ pg.certName }}</h2><p>завершив(ла) курс: {{ pg.certLine }}</p><span class="pc">{{ pg.certDate }}</span></div>
+          <div class="cert"><span class="ico i-award" aria-hidden="true"></span><span class="muted small">Академія ШІ</span><h2>{{ pg.certName }}</h2><p>завершив(ла) курс: {{ pg.certLine }}</p><span class="muted small">{{ pg.certDate }}</span></div>
         </sc-if>
       </section>
     </div>
@@ -478,35 +580,49 @@
 <sc-if value="{{ isExam }}">
 <div class="page">
   <sc-if value="{{ ex.intro }}">
-    <div class="mhead">
+    <div class="phead">
       <h1>Фінальний іспит</h1>
-      <p class="lead">{{ ex.count }} випадкових питань — по одному з кожного модуля. Відповісти можна лише раз. Прохідний бал — 80%.</p>
-      <sc-if value="{{ ex.hasBest }}"><span class="pc">Найкращий результат: {{ ex.best }}%</span></sc-if>
-      <div><button class="btn pri" onClick="{{ ex.start }}">Почати іспит</button></div>
+      <p class="lead">Перевірте, як ви засвоїли курс загалом. Питання щоразу інші, тож іспит можна складати кілька разів.</p>
+    </div>
+    <div class="card narrow">
+      <ul class="rules">
+        <li><span class="ico i-hash" aria-hidden="true"></span><span>{{ ex.count }} випадкових питань — по одному з кожного модуля.</span></li>
+        <li><span class="ico i-check" aria-hidden="true"></span><span>Відповісти на кожне питання можна лише раз.</span></li>
+        <li><span class="ico i-target" aria-hidden="true"></span><span>Прохідний бал — 80%.</span></li>
+        <li><span class="ico i-clock" aria-hidden="true"></span><span>Приблизно 10–15 хвилин.</span></li>
+      </ul>
+      <sc-if value="{{ ex.hasBest }}"><div class="alert info"><span class="ico i-award" aria-hidden="true"></span><div><span>Ваш найкращий результат: <b>{{ ex.best }}%</b></span></div></div></sc-if>
+      <sc-if value="{{ ex.notReady }}"><div class="alert warn"><span class="ico i-info" aria-hidden="true"></span><div><span>Завершено модулів: {{ ex.doneMods }} з {{ ex.count }}. Радимо спершу пройти курс, але почати іспит можна будь-коли.</span></div></div></sc-if>
+      <div><button class="btn primary lg" onClick="{{ ex.start }}">Почати іспит<span class="ico i-arrowRight" aria-hidden="true"></span></button></div>
     </div>
   </sc-if>
   <sc-if value="{{ ex.running }}">
-    <div class="card qcard">
-      <div class="qtop"><span class="lbl">Питання {{ ex.num }} з {{ ex.count }}</span><span class="pc">{{ ex.modTitle }}</span></div>
-      <progress value="{{ ex.pct }}" max="100"></progress>
-      <p class="qn">{{ ex.q }}</p>
-      <div class="opts"><sc-for list="{{ ex.opts }}" as="o"><button class="{{ o.cls }}" disabled="{{ o.locked }}" onClick="{{ o.pick }}"><span class="l">{{ o.letter }}</span><span>{{ o.text }}</span><span class="tg">{{ o.tag }}</span></button></sc-for></div>
-      <sc-if value="{{ ex.answered }}"><div class="why"><b>{{ ex.verdict }}</b> {{ ex.why }}</div><div><button class="btn pri" onClick="{{ ex.next }}">{{ ex.nextLabel }}</button></div></sc-if>
+    <div class="card narrow">
+      <div class="qtop"><span class="lbl">Питання {{ ex.num }} з {{ ex.count }}</span><span class="badge">{{ ex.modTitle }}</span></div>
+      <progress value="{{ ex.pct }}" max="100" aria-label="Пройдено іспиту"></progress>
+      <p class="qn" id="ex-q">{{ ex.q }}</p>
+      <div class="opts" role="group" aria-labelledby="ex-q"><sc-for list="{{ ex.opts }}" as="o"><button class="{{ o.cls }}" disabled="{{ o.locked }}" onClick="{{ o.pick }}"><span class="l" aria-hidden="true">{{ o.letter }}</span><span>{{ o.text }}</span><span class="tg">{{ o.tag }}</span></button></sc-for></div>
+      <sc-if value="{{ ex.answered }}"><div class="{{ ex.whyCls }}" role="status"><span class="{{ ex.whyIcon }}" aria-hidden="true"></span><div><b>{{ ex.verdict }}</b><span>{{ ex.why }}</span></div></div><div><button class="btn primary" onClick="{{ ex.next }}">{{ ex.nextLabel }}<span class="ico i-arrowRight" aria-hidden="true"></span></button></div></sc-if>
     </div>
   </sc-if>
   <sc-if value="{{ ex.finished }}">
-    <div class="card qcard">
+    <div class="card narrow">
       <span class="lbl">Результат іспиту</span>
-      <div><span class="big">{{ ex.pctScore }}%</span><span class="pc"> · {{ ex.score }} з {{ ex.count }}</span></div>
+      <div><span class="big">{{ ex.pctScore }}%</span><span class="muted"> · {{ ex.score }} з {{ ex.count }}</span></div>
       <h2>{{ ex.title }}</h2>
       <p class="muted">{{ ex.msg }}</p>
-      <sc-if value="{{ ex.hasWeak }}"><div class="note"><b>Повторіть ці модулі</b>
-        <div class="chips" style="margin-top:6px"><sc-for list="{{ ex.weak }}" as="w"><button class="chip btnchip" onClick="{{ w.open }}">{{ w.title }}</button></sc-for></div></div></sc-if>
-      <div><button class="btn" onClick="{{ ex.start }}">Пройти ще раз</button></div>
+      <sc-if value="{{ ex.hasWeak }}"><div class="field"><span class="lbl">Повторіть ці модулі</span>
+        <div class="chips"><sc-for list="{{ ex.weak }}" as="w"><button class="chip" onClick="{{ w.open }}">{{ w.title }}</button></sc-for></div></div></sc-if>
+      <div class="btn-row"><button class="btn primary" onClick="{{ ex.start }}"><span class="ico i-refresh" aria-hidden="true"></span>Пройти ще раз</button><button class="btn" onClick="{{ goProgress }}">Мій прогрес</button></div>
     </div>
   </sc-if>
 </div>
 </sc-if>
+
+<footer class="foot">
+  <div><b>Академія ШІ</b><span>Курс поєднує «Академію ШІ» та програму «ШІ-Майстер». Офіційні джерела наведено в підсумку кожного модуля. Тарифи й інтерфейси сервісів змінюються — перевіряйте їх перед оплатою чи підключенням.</span></div>
+  <div><b>Ваші дані</b><span>Прогрес і нотатки зберігаються лише у вашому браузері й нікуди не надсилаються. Не записуйте сюди паролі, ключі API й токени ботів.</span></div>
+</footer>
 
 </main>
 </div>
