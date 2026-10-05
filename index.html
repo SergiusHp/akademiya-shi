@@ -2053,6 +2053,8 @@ Object.assign(Component.prototype, {
     return j;
   },
 
+  _redir() { try { return /^https?:/.test(location.protocol) ? '?redirect_to=' + encodeURIComponent(location.origin + location.pathname) : ''; } catch (e) { return ''; } },
+
   authError(e) {
     const c = (e && e.code) || '', m = ((e && e.message) || '').toLowerCase();
     if (c === 'network') return 'Немає з’єднання з сервером. Перевірте інтернет і спробуйте ще раз.';
@@ -2117,7 +2119,7 @@ Object.assign(Component.prototype, {
     const bad = this.validAuth(em, pw, true); if (bad) return this.setState({ aMsg: bad, aOk: false });
     this.setState({ aBusy: true, aMsg: '' });
     try {
-      const r = await this._api('/auth/v1/signup', { method: 'POST', body: { email: em.trim(), password: pw, data: {} } });
+      const r = await this._api('/auth/v1/signup' + this._redir(), { method: 'POST', body: { email: em.trim(), password: pw, data: {} } });
       if (r && r.user && Array.isArray(r.user.identities) && r.user.identities.length === 0) throw Object.assign(new Error('registered'), { code: 'user_already_exists' });
       if (r && r.access_token) { this._setSession(r); this.setState({ aBusy: false, user: em.trim(), aPass: '', aMsg: '', view: 'progress' }); this.syncHash(); await this.pullAndMerge(); return; }
       this.setState({ aBusy: false, aPass: '', aMsg: 'Майже готово! Ми надіслали лист на ' + em.trim() + ' — натисніть посилання в ньому, щоб підтвердити email, і потім увійдіть.', aOk: true, authMode: 'login' });
@@ -2140,7 +2142,7 @@ Object.assign(Component.prototype, {
     if (!/^\S+@\S+\.\S+$/.test(em)) return this.setState({ aMsg: 'Введіть адресу email, на яку надіслати лист.', aOk: false });
     this.setState({ aBusy: true, aMsg: '' });
     try {
-      await this._api('/auth/v1/recover', { method: 'POST', body: { email: em } });
+      await this._api('/auth/v1/recover' + this._redir(), { method: 'POST', body: { email: em } });
       this.setState({ aBusy: false, aMsg: 'Якщо такий акаунт є, лист для відновлення пароля вже в дорозі. Перевірте пошту (і теку «Спам»).', aOk: true, authMode: 'login' });
     } catch (e) { this.setState({ aBusy: false, aMsg: this.authError(e), aOk: false }); }
   },
