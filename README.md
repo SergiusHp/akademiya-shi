@@ -30,3 +30,19 @@
 - Маршрути з адресою сторінки (`#/modul/05`, `#/biblioteka` тощо): працює кнопка «Назад» у браузері, сторінкою можна поділитися.
 - Мобільне меню, стани завантаження, порожні стани, помилки форм, підписи для екранних читачів, підтримка «зменшеного руху».
 - Без інтернету шрифти замінюються системними (Palatino/Georgia і Segoe UI).
+
+
+## Облікові записи й збереження прогресу (Supabase)
+
+За замовчуванням прогрес зберігається в браузері. Щоб люди реєструвалися за email, а прогрес зберігався на сервері й був доступний на всіх пристроях:
+
+1. Створіть безкоштовний проєкт на [supabase.com](https://supabase.com).
+2. У **SQL Editor** виконайте вміст файлу `supabase/setup.sql` (таблиця `progress` + правила доступу: кожен бачить лише свій рядок).
+3. У **Authentication → Providers** переконайтеся, що Email увімкнено. У **Authentication → URL Configuration** вкажіть `Site URL` = `https://sergiushp.github.io/akademiya-shi/`.
+4. У **Project Settings → API** скопіюйте `Project URL` і ключ `anon public` та впишіть у `src/config.json`:
+   ```json
+   { "supabaseUrl": "https://xxxx.supabase.co", "supabaseAnonKey": "eyJ..." }
+   ```
+5. `node tools/build.cjs`, потім закомітьте й запуште `index.html`.
+
+Ключ `anon` публічний за задумом — захист забезпечують правила RLS. **Ніколи** не вписуйте `service_role`.

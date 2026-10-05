@@ -37,8 +37,10 @@ ${iconCss}
 <template id="tpl">${read('src/template.html')}</template>
 <script>
 const COURSE = ${read('src/course.json').trim()};
+const AUTH_CFG = ${read('src/config.json').trim()};
 ${read('src/runtime.js')}
 ${read('src/logic.js')}
+${read('src/auth.js')}
 try {
   logic = new Component({}); render(); if (logic.componentDidMount) logic.componentDidMount();
 } catch (e) {

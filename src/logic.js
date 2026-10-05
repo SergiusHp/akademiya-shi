@@ -16,7 +16,8 @@ class Component extends DCLogic {
       },
       agent: {}, evid: { status: 'unverified' }, sim: { i: 0, c: 0, p: -1 },
       libTab: 'prompts', libq: '', libcat: 'Усі',
-      ex: { started: false, qs: [], i: 0, a: {}, fin: false }, exBest: 0, bk: '', bkmsg: '', bkok: true
+      ex: { started: false, qs: [], i: 0, a: {}, fin: false }, exBest: 0, bk: '', bkmsg: '', bkok: true,
+      user: null, authMode: 'login', aEmail: '', aPass: '', aBusy: false, aMsg: '', aOk: false, sync: 'idle'
     };
     this.WK = [
       ['builder', 'Конструктор промпту', 'message', 'Зберіть запит із п’яти частин і перевірте його повноту.'],
@@ -26,7 +27,7 @@ class Component extends DCLogic {
       ['evid', 'Картка доказу', 'quote', 'Зафіксуйте твердження, джерело й статус перевірки.'],
       ['sim', 'Сценарії рішень', 'split', 'Шість ситуацій про безпеку, факти й ботів.']
     ];
-    this.SLUG = { home: '', work: 'trenazhery', projects: 'proekty', lib: 'biblioteka', progress: 'progres', exam: 'ispyt', module: 'modul' };
+    this.SLUG = { home: '', work: 'trenazhery', projects: 'proekty', lib: 'biblioteka', progress: 'progres', exam: 'ispyt', account: 'akaunt', module: 'modul' };
   }
 
   // ---------- службове ----------
@@ -91,7 +92,9 @@ class Component extends DCLogic {
       });
       window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && this.state.menu) this.setState({ menu: false }); });
     } catch (e) {}
+    if (this.authInit) this.authInit();
     if (location.hash && location.hash !== '#/') this.fromHash();
+    try { document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && this.authOn && this.authOn() && this._dirty()) this.push(true).catch(() => {}); }); } catch (e) {}
   }
 
   save(patch) {
@@ -101,6 +104,7 @@ class Component extends DCLogic {
       const o = {}; this.PERSIST.forEach((k) => { o[k] = s[k]; });
       localStorage.setItem('ai-academy-v2', JSON.stringify(o));
     } catch (e) {}
+    if (this.markDirty) this.markDirty();
   }
 
   top(force) { try { if (force || window.scrollY > 0) window.scrollTo(0, 0); } catch (e) {} }
@@ -646,7 +650,7 @@ class Component extends DCLogic {
       goHome: () => this.go('home'), goProgress: () => this.go('progress'), openProjects: () => this.go('projects', { pid: null }),
       goRoute: () => { this.go('home'); setTimeout(() => { try { document.getElementById('route').scrollIntoView(); } catch (e) {} }, 60); },
       toRoute: () => { try { document.getElementById('route').scrollIntoView({ behavior: 'smooth' }); } catch (e) {} },
-      isHome: view === 'home', isModule: view === 'module', isWork: view === 'work', isProjects: view === 'projects', isLib: view === 'lib', isProgress: view === 'progress', isExam: view === 'exam',
+      isHome: view === 'home', isModule: view === 'module', isWork: view === 'work', isProjects: view === 'projects', isLib: view === 'lib', isProgress: view === 'progress', isExam: view === 'exam', isAccount: view === 'account', ac: this.authVals(),
       nav: nav, overall: overall,
       totals: { mods: mods.length, lessons: lessonsN, qs: qsN, hours: Math.round(totalMins / 60) },
       stages: stages, resume: resume, outcomes: outcomes, toolsList: toolsList,

@@ -10,6 +10,7 @@
     </nav>
     <div class="tools">
       <span class="pill" title="Пройдено курсу"><progress value="{{ overall }}" max="100" aria-hidden="true"></progress><span><span class="sr-only">Пройдено курсу: </span>{{ overall }}%</span></span>
+      <sc-if value="{{ ac.enabled }}"><button class="btn sm ghost acct-btn" onClick="{{ ac.open }}" aria-label="{{ ac.headLabel }}"><span class="{{ ac.headIcon }}" aria-hidden="true"></span><span class="acct-l">{{ ac.headLabel }}</span></button></sc-if>
       <button class="btn icon ghost" onClick="{{ toggleDark }}" aria-label="{{ themeLabel }}" title="{{ themeLabel }}"><span class="{{ themeIcon }}" aria-hidden="true"></span></button>
       <button class="btn icon ghost menu-btn" onClick="{{ toggleMenu }}" aria-label="Відкрити меню" aria-expanded="{{ menuExpanded }}"><span class="ico i-menu" aria-hidden="true"></span></button>
     </div>
@@ -23,6 +24,7 @@
     <sc-for list="{{ nav }}" as="n"><button class="navb" aria-current="{{ n.current }}" onClick="{{ n.go }}"><span class="{{ n.icon }}" aria-hidden="true"></span>{{ n.label }}</button></sc-for>
     <div class="sheet-foot">
       <div class="mprog"><progress value="{{ overall }}" max="100" aria-hidden="true"></progress><span>Пройдено {{ overall }}%</span></div>
+      <sc-if value="{{ ac.enabled }}"><button class="btn" onClick="{{ ac.open }}"><span class="{{ ac.headIcon }}" aria-hidden="true"></span>{{ ac.headLabel }}</button></sc-if>
       <button class="btn" onClick="{{ toggleDark }}"><span class="{{ themeIcon }}" aria-hidden="true"></span>{{ themeLabel }}</button>
     </div>
   </div>
@@ -525,12 +527,70 @@
 </div>
 </sc-if>
 
+<!-- ================= АКАУНТ ================= -->
+<sc-if value="{{ isAccount }}">
+<div class="page narrow">
+  <div class="phead">
+    <h1>Акаунт</h1>
+    <p class="lead">Увійдіть за email, щоб ваш прогрес зберігався на сервері й був доступний на телефоні та комп’ютері.</p>
+  </div>
+  <sc-if value="{{ ac.off }}">
+    <div class="alert info"><span class="ico i-info" aria-hidden="true"></span><div><span>Облікові записи на цьому сайті ще не підключено. Прогрес зберігається в браузері; для переносу скористайтеся резервною копією на сторінці «Прогрес».</span></div></div>
+  </sc-if>
+  <sc-if value="{{ ac.signedCard }}">
+    <section class="card" aria-labelledby="ac-h">
+      <h3 id="ac-h">Ви увійшли</h3>
+      <p class="acct-mail"><span class="acct-ava" aria-hidden="true">{{ ac.initial }}</span><b>{{ ac.email }}</b></p>
+      <div class="{{ ac.syncCls }}" role="status"><span class="ico i-info" aria-hidden="true"></span><div><span>{{ ac.syncText }}</span></div></div>
+      <sc-if value="{{ ac.hasMsg }}"><div class="{{ ac.msgCls }}" role="status"><span class="{{ ac.msgIcon }}" aria-hidden="true"></span><div><span>{{ ac.msg }}</span></div></div></sc-if>
+      <div class="btn-row">
+        <button class="btn" onClick="{{ ac.syncNow }}"><span class="ico i-refresh" aria-hidden="true"></span>Синхронізувати зараз</button>
+        <button class="btn" onClick="{{ ac.signOut }}" disabled="{{ ac.busy }}">Вийти</button>
+      </div>
+      <p class="muted small">Після виходу дані прогресу буде прибрано з цього пристрою — вони лишаються в акаунті.</p>
+    </section>
+  </sc-if>
+  <sc-if value="{{ ac.enabled }}">
+  <sc-if value="{{ ac.signedOut }}">
+    <section class="card" aria-labelledby="ac-t">
+      <h3 id="ac-t">{{ ac.title }}</h3>
+      <form class="stack" onSubmit="{{ ac.submit }}" novalidate>
+        <sc-if value="{{ ac.showEmail }}"><div class="field"><label for="ac-email">Email</label><input id="ac-email" type="text" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="name@example.com" value="{{ ac.email_ }}" onInput="{{ ac.onEmail }}"></div></sc-if>
+        <sc-if value="{{ ac.showPass }}"><div class="field"><label for="ac-pass">Пароль</label><input id="ac-pass" type="password" autocomplete="{{ ac.passAuto }}" value="{{ ac.pass }}" onInput="{{ ac.onPass }}"><span class="hint">{{ ac.passHint }}</span></div></sc-if>
+        <sc-if value="{{ ac.hasMsg }}"><div class="{{ ac.msgCls }}" role="alert"><span class="{{ ac.msgIcon }}" aria-hidden="true"></span><div><span>{{ ac.msg }}</span></div></div></sc-if>
+        <button class="btn primary lg" type="submit" disabled="{{ ac.busy }}">{{ ac.submitLabel }}</button>
+      </form>
+      <div class="acct-alt">
+        <sc-if value="{{ ac.isLogin }}"><span>Ще немає акаунта? <button class="linkb" onClick="{{ ac.toRegister }}">Зареєструватися</button></span><button class="linkb" onClick="{{ ac.toReset }}">Забули пароль?</button></sc-if>
+        <sc-if value="{{ ac.isRegister }}"><span>Вже є акаунт? <button class="linkb" onClick="{{ ac.toLogin }}">Увійти</button></span></sc-if>
+        <sc-if value="{{ ac.isReset }}"><button class="linkb" onClick="{{ ac.toLogin }}">Повернутися до входу</button></sc-if>
+      </div>
+      <p class="muted small">Ми зберігаємо лише ваш email і прогрес навчання. Дані не передаються третім особам і не використовуються для реклами.</p>
+    </section>
+  </sc-if>
+  <sc-if value="{{ ac.isNewpass }}">
+    <section class="card" aria-labelledby="ac-n">
+      <h3 id="ac-n">Новий пароль</h3>
+      <form class="stack" onSubmit="{{ ac.submit }}" novalidate>
+        <div class="field"><label for="ac-pass2">Новий пароль</label><input id="ac-pass2" type="password" autocomplete="new-password" value="{{ ac.pass }}" onInput="{{ ac.onPass }}"><span class="hint">Щонайменше 8 символів.</span></div>
+        <sc-if value="{{ ac.hasMsg }}"><div class="{{ ac.msgCls }}" role="alert"><span class="{{ ac.msgIcon }}" aria-hidden="true"></span><div><span>{{ ac.msg }}</span></div></div></sc-if>
+        <button class="btn primary lg" type="submit" disabled="{{ ac.busy }}">{{ ac.submitLabel }}</button>
+      </form>
+    </section>
+  </sc-if>
+  </sc-if>
+</div>
+</sc-if>
+
 <!-- ================= ПРОГРЕС ================= -->
 <sc-if value="{{ isProgress }}">
 <div class="page">
   <div class="phead">
     <h1>Мій прогрес</h1>
-    <p class="lead">Прогрес зберігається лише в цьому браузері. На іншому пристрої перенесіть його резервною копією.</p>
+    <sc-if value="{{ ac.signed }}"><p class="lead">Прогрес зберігається у вашому акаунті й доступний на будь-якому пристрої.</p></sc-if>
+    <sc-if value="{{ ac.localNote }}"><p class="lead">Зараз прогрес зберігається лише в цьому браузері. Створіть акаунт — і він буде з вами на всіх пристроях.</p></sc-if>
+    <sc-if value="{{ ac.off }}"><p class="lead">Прогрес зберігається лише в цьому браузері. На іншому пристрої перенесіть його резервною копією.</p></sc-if>
+    <sc-if value="{{ ac.localNote }}"><div class="btn-row"><button class="btn primary" onClick="{{ ac.open }}"><span class="ico i-user" aria-hidden="true"></span>Увійти або зареєструватися</button></div></sc-if>
   </div>
   <div class="stats four">
     <div class="stat"><b>{{ pg.sMods }}</b><span>модулів завершено</span></div>
