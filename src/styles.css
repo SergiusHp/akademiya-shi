@@ -284,6 +284,8 @@ textarea:focus,input:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 
 .split{display:flex;flex-direction:column;gap:20px}
 
 @media (max-width:980px){
+  .nav{order:3;flex-basis:100%}
+  .tools{margin-left:auto}
   .hero{grid-template-columns:minmax(0,1fr);gap:36px;padding-top:40px}
   .stage{grid-template-columns:minmax(0,1fr);gap:16px}
   .stage-h{position:static}
@@ -295,7 +297,6 @@ textarea:focus,input:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 
 }
 @media (max-width:640px){
   .wrap{padding:0 16px}
-  .nav{order:3;flex-basis:100%}
   .topin{gap:8px}
   .meter progress{display:none}
   .how{grid-template-columns:minmax(0,1fr);gap:18px}
