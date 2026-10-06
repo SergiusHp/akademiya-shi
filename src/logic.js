@@ -7,7 +7,7 @@ class Component extends DCLogic {
     this.calcMinutes();
     this.PERSIST = ['dark', 'done', 'ans', 'miss', 'rub', 'notes', 'proj', 'fav', 'name', 'lab', 'cost', 'agent', 'evid', 'exBest'];
     this.state = {
-      view: 'home', mi: 0, tab: 'lessons', li: 0, qi: 0, dark: false, menu: false, stagesOpen: null,
+      view: 'home', mi: 0, tab: 'lessons', li: 0, qi: 0, dark: false, menu: false, stagesOpen: null, pick: {},
       done: {}, ans: {}, miss: {}, rub: {}, notes: {}, proj: {}, pid: null, fav: {}, name: '', copied: '', live: '',
       lab: { role: '', ctx: '', task: '', fmt: '', cons: '' }, wk: 'builder', tok: '',
       cost: {
@@ -36,7 +36,7 @@ class Component extends DCLogic {
     const segs = (a) => (a || []).map((x) => x.t).join(' ');
     this.minsL = this.C.modules.map((m) => m.lessons.map((l) => {
       let w = words(l.tip) + words(l.bad) + words(l.good);
-      l.blocks.forEach((b) => { w += words(segs(b.segs)) + words(b.text) + words(b.title); (b.items || []).forEach((it) => { w += words(segs(it.segs)) + words(it.t); }); });
+      l.blocks.forEach((b) => { w += words(segs(b.segs)) + words(b.text) + words(b.title); (b.items || []).forEach((it) => { w += words(segs(it.segs)) + words(it.t) + words(it.label) + words(it.note); }); (b.rows || []).forEach((r) => { w += words(r.join(' ')); }); });
       return Math.max(2, Math.round(w / 160));
     }));
     this.minsM = this.C.modules.map((m, mi) => {
@@ -192,11 +192,22 @@ class Component extends DCLogic {
     });
   }
 
-  blk(b) {
-    return {
+  blk(b, key) {
+    const o = {
       isP: b.k === 'p', isH: b.k === 'h', isUl: b.k === 'ul', isOl: b.k === 'ol', isPre: b.k === 'pre', isSteps: b.k === 'steps', isCall: b.k === 'call',
-      segs: b.segs || [], text: b.text || '', items: b.items || [], title: b.title || '', cls: b.warn ? 'call warn' : 'call'
+      isTable: b.k === 'table', isPick: b.k === 'pick',
+      segs: b.segs || [], text: b.text || '', items: b.items || [], title: b.title || '', cls: b.warn ? 'call warn' : 'call',
+      head: b.head || [], rows: (b.rows || []).map((r) => ({ cells: r }))
     };
+    if (o.isPick) {
+      const sel = (this.state.pick || {})[key];
+      o.hint = b.hint || '';
+      o.choices = b.items.map((it, i) => ({ label: it.label, pressed: sel === i ? 'true' : 'false', pick: () => this.setState({ pick: Object.assign({}, this.state.pick, { [key]: i }) }) }));
+      const r = sel !== undefined ? b.items[sel] : null;
+      o.has = !!r; o.none = !r;
+      o.res = r ? { rows: r.rows.map((x) => ({ k: x[0], v: x[1] })), note: r.note || '' } : { rows: [], note: '' };
+    }
+    return o;
   }
 
   verdict(ok) {
@@ -243,7 +254,8 @@ class Component extends DCLogic {
     const stageDesc = [
       'Як працює ШІ, як ставити завдання, керувати контекстом, витратами й даними.',
       'Дослідження й перевірка фактів, документи, контент, сайти та код.',
-      'Агенти, бази знань, автоматизація, Telegram і професійна система роботи.'
+      'Агенти, бази знань, автоматизація, Telegram і професійна система роботи.',
+      'Як налаштувати Claude, ChatGPT і Gemini під себе. Не обов’язково для іспиту й відмітки про проходження.'
     ];
     const curStage = mods[nextMi].stage;
     const openSet = s.stagesOpen || { [curStage]: true };
@@ -280,7 +292,8 @@ class Component extends DCLogic {
       ['search', 'Досліджувати й перевіряти факти', 'Бриф, джерела, таблиця доказів, розпізнавання вигаданих цитат і посилань.', ['08', '09']],
       ['layout', 'Створювати сайти з ШІ', 'Від брифу до робочої сторінки: дизайн без шаблонності, перевірка, код і запуск.', ['12', '13']],
       ['flow', 'Налаштовувати агентів і автоматизацію', 'Мета, інструменти, межі й контроль; бази знань, RAG і MCP.', ['14', '15', '16']],
-      ['send', 'Запускати Telegram-ботів і канали', 'Архітектура бота, системний промпт, пам’ять, контент-план і безпека токенів.', ['17', '18']]
+      ['send', 'Запускати Telegram-ботів і канали', 'Архітектура бота, системний промпт, пам’ять, контент-план і безпека токенів.', ['17', '18']],
+      ['sliders', 'Налаштувати Claude, ChatGPT і Gemini', 'Моделі й рівні мислення, інструкції, проєкти, пам’ять, скіли, плагіни — щоб працювати максимально ефективно.', ['21', '22', '23']]
     ];
     const outcomes = outcomeDefs.map((o) => {
       const first = modByNum(o[3][0]);
@@ -304,7 +317,7 @@ class Component extends DCLogic {
     const lid = mi + '-' + li, ckey = 'l' + lid;
     const one = [{
       num: li + 1, total: L, mins: this.minsL[mi][li], t: curL.t, deep: curL.deep, done: !!s.done[lid],
-      blocks: curL.blocks.map((b) => this.blk(b)),
+      blocks: curL.blocks.map((b, bi) => this.blk(b, mi + '-' + li + '-' + bi)),
       hasEx: !!curL.bad, bad: curL.bad, good: curL.good,
       hasTpl: !!curL.tpl, tpl: curL.tpl, tplTitle: curL.tplTitle && curL.tplTitle !== 'Шаблон' ? curL.tplTitle : '',
       copy: () => this.copy(ckey, curL.tpl), copyLabel: copyL(ckey, 'Копіювати шаблон'), copyIcon: copyI(ckey),
@@ -567,7 +580,8 @@ class Component extends DCLogic {
       if (qq && s.ans[id] !== qq.c) missList.push({ q: qq.q, right: qq.o[qq.c], why: qq.why, open: () => this.go('module', { mi: a, tab: 'quiz', qi: b, li: 0 }) });
     });
     const exPass = s.exBest >= 80;
-    const allMods = doneMods === mods.length, allProj = pjDone === C.projects.length;
+    const coreIdx = mods.map((m, i) => i).filter((i) => !mods[i].bonus), coreDone = coreIdx.filter((i) => stats[i].complete).length;
+    const allMods = coreDone === coreIdx.length, allProj = pjDone === C.projects.length;
     const cond = (ok, text) => ({ cls: ok ? 'ck y' : 'ck n', icon: I(ok ? 'checkCircle' : 'circle'), text: text });
     const bkMsg = s.bkmsg;
     const pg = {
@@ -599,13 +613,13 @@ class Component extends DCLogic {
       },
       hasMsg: !!bkMsg, msg: bkMsg, msgCls: s.bkok ? 'alert ok' : 'alert err', msgIcon: s.bkok ? I('checkCircle') : I('alert'),
       name: s.name, onName: (e) => this.save({ name: e.target.value }),
-      conds: [cond(allMods, 'Модулі: ' + doneMods + ' з ' + mods.length), cond(allProj, 'Проєкти: ' + pjDone + ' з ' + C.projects.length), cond(exPass, 'Іспит від 80% (найкращий: ' + (s.exBest || 0) + '%)')],
+      conds: [cond(allMods, 'Основні модулі: ' + coreDone + ' з ' + coreIdx.length), cond(allProj, 'Проєкти: ' + pjDone + ' з ' + C.projects.length), cond(exPass, 'Іспит від 80% (найкращий: ' + (s.exBest || 0) + '%)')],
       certOk: allMods && allProj && exPass, certName: s.name.trim() || 'Учасник(ця) курсу',
-      certLine: mods.length + ' модулів, ' + C.projects.length + ' проєкти, іспит ' + s.exBest + '%', certDate: new Date().toLocaleDateString('uk-UA')
+      certLine: coreIdx.length + ' модулів, ' + C.projects.length + ' проєкти, іспит ' + s.exBest + '%', certDate: new Date().toLocaleDateString('uk-UA')
     };
 
     // іспит
-    const ex = s.ex, eqs = ex.qs, n = eqs.length || mods.length;
+    const ex = s.ex, eqs = ex.qs, n = eqs.length || coreIdx.length;
     const exQ = eqs[ex.i] ? mods[eqs[ex.i][0]].quiz[eqs[ex.i][1]] : null;
     let exScore = 0; const weakSet = {};
     eqs.forEach((e, i) => { if (ex.a[i] !== undefined) { if (ex.a[i] === mods[e[0]].quiz[e[1]].c) exScore++; else weakSet[e[0]] = true; } });
@@ -615,7 +629,7 @@ class Component extends DCLogic {
     const weak = Object.keys(weakSet).map(Number).sort((a, b) => a - b).map((k) => ({ title: mods[k].num + '. ' + mods[k].title, open: () => this.openModule(k) }));
     const exV = {
       intro: !ex.started, running: ex.started && !ex.fin, finished: ex.fin, count: n, hasBest: s.exBest > 0, best: s.exBest,
-      notReady: doneMods < mods.length, doneMods: doneMods,
+      notReady: coreDone < coreIdx.length, doneMods: coreDone,
       num: ex.i + 1, pct: Math.round(100 * (ex.i + (exAns ? 1 : 0)) / n), modTitle: exQ ? 'Модуль ' + mods[eqs[ex.i][0]].num : '', q: exQ ? exQ.q : '',
       opts: exQ ? this.optsFor(exQ, exSel, (oi) => { const e2 = this.state.ex; if (e2.a[e2.i] !== undefined) return; const a = Object.assign({}, e2.a); a[e2.i] = oi; this.setState({ ex: Object.assign({}, e2, { a: a }) }); }) : [],
       answered: exAns, verdict: xv.text, whyCls: xv.cls, whyIcon: xv.icon, why: exQ ? exQ.why : '',
@@ -630,7 +644,7 @@ class Component extends DCLogic {
         this.top();
       },
       start: () => {
-        const qs = mods.map((m, mi2) => [mi2, Math.floor(Math.random() * m.quiz.length)]);
+        const qs = coreIdx.map((mi2) => [mi2, Math.floor(Math.random() * mods[mi2].quiz.length)]);
         for (let i = qs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = qs[i]; qs[i] = qs[j]; qs[j] = t; }
         this.setState({ ex: { started: true, qs: qs, i: 0, a: {}, fin: false } });
         this.top();

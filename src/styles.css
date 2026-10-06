@@ -529,3 +529,27 @@ input[type=password]{width:100%;min-height:44px;padding:11px 14px;border:1px sol
 input[type=password]:hover{border-color:var(--text-3)}
 input[type=password]:focus-visible,input[type=password]:focus{border-color:var(--accent);box-shadow:var(--focus);outline:0}
 @media (max-width:1380px){.acct-l{display:none}.acct-btn{padding-inline:10px}}
+
+/* Бонус-етап: таблиці й підбирачі в уроках */
+.tbl-wrap{overflow-x:auto;margin:var(--s4) 0;border:1px solid var(--border);border-radius:var(--r-md);-webkit-overflow-scrolling:touch}
+.tbl{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:var(--fs-sm);line-height:1.5;min-width:440px}
+.tbl th,.tbl td{text-align:left;vertical-align:top;padding:10px 14px;border-bottom:1px solid var(--border)}
+.tbl th{background:var(--surface-2);font-weight:600;color:var(--text)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td:first-child{font-weight:600}
+.pick{margin:var(--s5) 0;padding:var(--s5);border:1px solid var(--border);border-radius:var(--r-lg);background:var(--surface);display:flex;flex-direction:column;gap:10px;font-family:var(--sans)}
+.pick-h{display:flex;align-items:center;gap:8px;font-size:var(--fs-base)}
+.chips.wrap{flex-wrap:wrap;display:flex;gap:8px}
+.chips.wrap .chip{white-space:normal;text-align:left}
+.pick-res{border-radius:var(--r-md);background:var(--accent-soft, var(--surface-2));padding:var(--s4);animation:pickIn .2s ease}
+.pick-res dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:0 0 8px}
+.pick-res dl div{background:var(--surface);border-radius:var(--r-sm, 8px);padding:8px 12px}
+.pick-res dt{font-size:var(--fs-xs, 12px);color:var(--text-2)}
+.pick-res dd{margin:2px 0 0;font-weight:600}
+.pick-res p{margin:0;font-size:var(--fs-sm)}
+.pick-empty{padding:4px 0}
+@keyframes pickIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.pick-res{animation:none}}
+/* Вузькі екрани: без бокового прокручування */
+@media (max-width:640px){.lnav .btn{min-width:0;white-space:normal;text-align:center;line-height:1.25}}
+@media (max-width:400px){.tools{gap:4px}.tools .pill{display:none}}

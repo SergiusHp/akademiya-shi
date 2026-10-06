@@ -121,12 +121,19 @@ const modules = plan.map((e, idx) => {
 // Сталі стадії: модулі 1–6 → 0, 7–13 → 1, 14–20 → 2
 modules.forEach((m, i) => { m.stage = i < 6 ? 0 : i < 13 ? 1 : 2; });
 
+// ---------- бонус-етап: Claude, ChatGPT і Gemini (src/source/bonus.cjs) ----------
+const bonus = require(path.join(root, 'src/source/bonus.cjs'));
+const bonusStage = T.stages.length;
+bonus.modules.forEach((m) => {
+  modules.push(Object.assign({}, m, { num: String(modules.length + 1).padStart(2, '0'), stage: bonusStage, bonus: true }));
+});
+
 const out = {
-  stages: T.stages,
-  sources: T.sources.concat(extraSources),
+  stages: T.stages.concat([bonus.stage]),
+  sources: T.sources.concat(extraSources, bonus.sources),
   modules,
-  extras: T.prompts.filter((p) => !p.module).map((p) => ({ title: p.title, text: p.text, cat: p.category, use: p.use, input: p.input })),
-  projects: T.projects, glossary: T.glossary, scenarios: T.scenarios, updated: T.updated
+  extras: T.prompts.filter((p) => !p.module).map((p) => ({ title: p.title, text: p.text, cat: p.category, use: p.use, input: p.input })).concat(bonus.extras),
+  projects: T.projects, glossary: T.glossary.concat(bonus.glossary), scenarios: T.scenarios, updated: T.updated
 };
 fs.writeFileSync(path.join(root, 'src/course.json'), JSON.stringify(out));
 const L = modules.reduce((n, m) => n + m.lessons.length, 0), Q = modules.reduce((n, m) => n + m.quiz.length, 0);

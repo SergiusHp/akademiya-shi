@@ -197,6 +197,8 @@
           <sc-if value="{{ b.isPre }}"><pre class="blk">{{ b.text }}</pre></sc-if>
           <sc-if value="{{ b.isSteps }}"><div class="flow"><sc-for list="{{ b.items }}" as="it"><span class="st">{{ it.t }}</span><span class="ar" aria-hidden="true">→</span></sc-for></div></sc-if>
           <sc-if value="{{ b.isCall }}"><div class="{{ b.cls }}"><b>{{ b.title }}</b><span><sc-for list="{{ b.segs }}" as="s"><span class="{{ s.cls }}">{{ s.t }}</span></sc-for></span></div></sc-if>
+          <sc-if value="{{ b.isTable }}"><div class="tbl-wrap" tabindex="0" role="region" aria-label="Таблиця"><table class="tbl"><thead><tr><sc-for list="{{ b.head }}" as="h"><th scope="col">{{ h }}</th></sc-for></tr></thead><tbody><sc-for list="{{ b.rows }}" as="r"><tr><sc-for list="{{ r.cells }}" as="c"><td>{{ c }}</td></sc-for></tr></sc-for></tbody></table></div></sc-if>
+          <sc-if value="{{ b.isPick }}"><div class="pick"><div class="pick-h"><span class="ico i-sliders" aria-hidden="true"></span><b>{{ b.title }}</b></div><span class="muted small">{{ b.hint }}</span><div class="chips wrap" role="group" aria-label="{{ b.title }}"><sc-for list="{{ b.choices }}" as="c"><button class="chip" aria-pressed="{{ c.pressed }}" onClick="{{ c.pick }}">{{ c.label }}</button></sc-for></div><sc-if value="{{ b.has }}"><div class="pick-res" aria-live="polite"><dl><sc-for list="{{ b.res.rows }}" as="x"><div><dt>{{ x.k }}</dt><dd>{{ x.v }}</dd></div></sc-for></dl><p>{{ b.res.note }}</p></div></sc-if><sc-if value="{{ b.none }}"><div class="pick-empty muted small">Тут з’явиться рекомендація.</div></sc-if></div></sc-if>
         </sc-for>
       </div>
       <sc-if value="{{ l.hasEx }}">
@@ -232,6 +234,8 @@
           <sc-if value="{{ b.isPre }}"><pre class="blk">{{ b.text }}</pre></sc-if>
           <sc-if value="{{ b.isSteps }}"><div class="flow"><sc-for list="{{ b.items }}" as="it"><span class="st">{{ it.t }}</span><span class="ar" aria-hidden="true">→</span></sc-for></div></sc-if>
           <sc-if value="{{ b.isCall }}"><div class="{{ b.cls }}"><b>{{ b.title }}</b><span><sc-for list="{{ b.segs }}" as="s"><span class="{{ s.cls }}">{{ s.t }}</span></sc-for></span></div></sc-if>
+          <sc-if value="{{ b.isTable }}"><div class="tbl-wrap" tabindex="0" role="region" aria-label="Таблиця"><table class="tbl"><thead><tr><sc-for list="{{ b.head }}" as="h"><th scope="col">{{ h }}</th></sc-for></tr></thead><tbody><sc-for list="{{ b.rows }}" as="r"><tr><sc-for list="{{ r.cells }}" as="c"><td>{{ c }}</td></sc-for></tr></sc-for></tbody></table></div></sc-if>
+          <sc-if value="{{ b.isPick }}"><div class="pick"><div class="pick-h"><span class="ico i-sliders" aria-hidden="true"></span><b>{{ b.title }}</b></div><span class="muted small">{{ b.hint }}</span><div class="chips wrap" role="group" aria-label="{{ b.title }}"><sc-for list="{{ b.choices }}" as="c"><button class="chip" aria-pressed="{{ c.pressed }}" onClick="{{ c.pick }}">{{ c.label }}</button></sc-for></div><sc-if value="{{ b.has }}"><div class="pick-res" aria-live="polite"><dl><sc-for list="{{ b.res.rows }}" as="x"><div><dt>{{ x.k }}</dt><dd>{{ x.v }}</dd></div></sc-for></dl><p>{{ b.res.note }}</p></div></sc-if><sc-if value="{{ b.none }}"><div class="pick-empty muted small">Тут з’явиться рекомендація.</div></sc-if></div></sc-if>
         </sc-for>
       </div>
       <sc-if value="{{ l.hasEx }}">
